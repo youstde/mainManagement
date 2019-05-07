@@ -1,0 +1,189 @@
+@import '~@/styles/variable.less';
+
+@uploadBackground: #e5e5e5;
+@uploadWidth: 160px;
+@uploadHeight: 120px;
+@uploadWidthForCard: 160px;
+@uploadHeightForCard: 92px;
+
+// 普通上传的样式
+.uploadButton {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+
+    &:hover {
+        .uploadIcon {
+            box-shadow: 0 4px 10px 2px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+    }
+}
+.uploadIconWrap {
+    flex: 1;
+
+    .uploadIcon {
+        display: block;
+        box-sizing: border-box;
+        width: 70px;
+        height: 70px;
+        margin: 10px auto 0;
+        padding: 15px;
+        color: @themeBlue;
+        background: #fff;
+        border-radius: 100%;
+        box-shadow: 0 4px 5px 2px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+
+        :global {
+            .anticon {
+                width: 100%;
+                height: 100%;
+            }
+        }
+    }
+}
+.uploadTip {
+    height: 25px;
+    color: #fff;
+    line-height: 25px;
+    background: @themeBlue;
+}
+
+// 身份证上传的样式
+.uploadCardButton {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    color: #fff;
+    background-size: 100%;
+
+    &.frontBackground {
+        // background: url('../../assets/card-front.png') center no-repeat;
+        background: #f0f0f0 center no-repeat;
+    }
+    &.backBackground {
+        background: #f0f0f0 center no-repeat;
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: rgba(0, 0, 0, 0.4);
+    }
+
+    .uploadIconPlus {
+        position: relative;
+        top: 15px;
+        z-index: 10;
+        width: 30px;
+        height: 30px;
+        margin: 0 auto 20px;
+        font-size: 30px;
+        line-height: 25px;
+        border: 1px dashed #fff;
+    }
+    .uploadCardTip {
+        position: relative;
+        z-index: 10;
+    }
+}
+
+// 正常上传组件的样式
+.uploadContainer {
+    // display: inline-block;
+
+    .upload {
+        // display: inline-block;
+
+        &::after {
+            content: '';
+            display: table;
+            clear: both;
+        }
+    }
+
+    :global {
+        // 上传组件的样式
+        .ant-upload.ant-upload-select-picture-card {
+            display: inline-block;
+            width: @uploadWidth;
+            height: @uploadHeight;
+            background-color: @uploadBackground;
+            border: none;
+        }
+        .ant-upload.ant-upload-select-picture-card > .ant-upload {
+            display: block;
+            padding: 0;
+        }
+        // 展示文件名称
+        .ant-upload-list-picture-card .ant-upload-list-item-name {
+            display: block;
+        }
+
+        // 上传后照片列表的样式
+        .ant-upload-list-picture-card {
+            .ant-upload-list-item {
+                width: @uploadWidth;
+                height: @uploadHeight;
+            }
+        }
+    }
+}
+
+// 身份证上传的样式
+.uploadContainer.uploadCardType {
+    :global {
+        // 上传组件的样式
+        .ant-upload.ant-upload-select-picture-card {
+            display: inline-block;
+            width: @uploadWidthForCard;
+            height: @uploadHeightForCard;
+            background-color: @uploadBackground;
+            border: none;
+        }
+        .ant-upload.ant-upload-select-picture-card > .ant-upload {
+            display: block;
+            padding: 0;
+        }
+
+        // 上传后照片列表的样式
+        .ant-upload-list-picture-card .ant-upload-list-item {
+            width: @uploadWidthForCard;
+            height: @uploadHeightForCard;
+        }
+    }
+}
+
+:global {
+    // 全屏弹窗样式
+    .ant-modal-wrap.zn-fullScreenModal {
+        // height: 100%;
+        // top: 40px;
+        // right: 80px;
+        // bottom: 40px;
+        // left: 80px;
+        padding: 50px 100px 30px;
+
+        .ant-modal {
+            top: 0;
+            height: 100%;
+
+            .ant-modal-content {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+
+            .ant-modal-body {
+                flex: 1;
+                padding: 0;
+            }
+        }
+    }
+}

@@ -1,0 +1,124 @@
+@import '~@/styles/variable.less';
+
+@buttonDanger: #f5202d;
+@buttonWarn: #faad15;
+@buttonPending: #52c41a;
+
+@disabledFont: #999;
+@disabledBackground: #f2f2f2;
+@disabledBorder: #d8d8d8;
+
+.button {
+    box-sizing: border-box;
+    color: #fff;
+    border-color: transparent;
+    border-radius: 30px;
+    transition: all 0.3s;
+
+    &:hover {
+        color: #fff;
+        border-color: transparent;
+        opacity: 0.8;
+        transition: all 0.3s;
+    }
+
+    &.primary {
+        background: @themeBlue;
+
+        &:focus {
+            color: #fff;
+            background: @themeBlue;
+            border-color: transparent;
+            opacity: 0.8;
+        }
+
+        &:disabled {
+            color: @disabledFont;
+            background: @disabledBackground;
+            border-color: transparent;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+
+    &.danger {
+        background: @buttonDanger;
+
+        &:focus {
+            color: #fff;
+            background: @buttonDanger;
+            border-color: transparent;
+            opacity: 0.8;
+        }
+
+        &:disabled {
+            color: @disabledFont;
+            background: @disabledBackground;
+            border-color: transparent;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+
+    &.warn {
+        background: @buttonWarn;
+
+        &:focus {
+            color: #fff;
+            background: @buttonWarn;
+            border-color: transparent;
+            opacity: 0.8;
+        }
+
+        &:disabled {
+            color: @disabledFont;
+            background: @disabledBackground;
+            border-color: transparent;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+
+    &.pending {
+        background: @buttonPending;
+
+        &:focus {
+            color: #fff;
+            background: @buttonPending;
+            border-color: transparent;
+            opacity: 0.8;
+        }
+
+        &:disabled {
+            color: @disabledFont;
+            background: @disabledBackground;
+            border-color: transparent;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+
+    &.default {
+        color: @themeBlue;
+        background: #fff;
+        border-color: @themeBlue;
+
+        &:disabled {
+            color: @disabledFont;
+            border-color: @disabledBorder;
+
+            &:hover {
+                background: #fff;
+                opacity: 1;
+            }
+        }
+    }
+}

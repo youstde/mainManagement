@@ -1,0 +1,95 @@
+@import '~@/styles/variable.less';
+
+@largeSizeMargin: 30px;
+@largeSizeHeight: 40px;
+
+@defaultSizeMargin: 20px;
+@defaultSizeHeight: 32px;
+
+@smallSizeMargin: 10px;
+@smallSizeHeight: 24px;
+
+.container {
+    display: flex;
+
+    &.left {
+        flex-wrap: wrap;
+    }
+
+    &.center {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    &.right {
+        flex-direction: row-reverse;
+        flex-wrap: wrap-reverse;
+    }
+
+    &.large {
+        .groupButton {
+            margin-left: @largeSizeMargin;
+        }
+
+        .contractWrap {
+            height: @largeSizeHeight;
+            margin-left: @largeSizeMargin;
+            line-height: @largeSizeHeight;
+        }
+    }
+
+    &.default {
+        .groupButton {
+            margin-left: @defaultSizeMargin;
+        }
+
+        .contractWrap {
+            height: @defaultSizeHeight;
+            margin-left: @defaultSizeMargin;
+            line-height: @defaultSizeHeight;
+        }
+    }
+
+    &.small {
+        .groupButton {
+            margin-left: @smallSizeMargin;
+        }
+
+        .contractWrap {
+            height: @smallSizeHeight;
+            margin-left: @smallSizeMargin;
+            line-height: @smallSizeHeight;
+        }
+    }
+
+    // 按钮
+    .groupButton {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    // 合同
+    .contractWrap {
+        margin-bottom: 10px;
+
+        :global {
+            .ant-checkbox + span {
+                padding-right: 0;
+            }
+        }
+
+        .divide {
+            position: relative;
+            top: 3px;
+            display: inline-block;
+            width: 1px;
+            height: 18px;
+            margin: 0 10px;
+            background: #666;
+        }
+
+        .contractLink {
+            text-decoration: underline;
+        }
+    }
+}

@@ -1,0 +1,21 @@
+@lineHeight: 32px;
+
+.detail {
+    display: flex;
+    margin-bottom: 12px;
+
+    .label {
+        // height: @lineHeight;
+        margin-right: 30px;
+        // line-height: @lineHeight;
+        text-align: right;
+
+        &::after {
+            content: ':';
+        }
+    }
+    .value {
+        flex: 1;
+        align-self: center;
+    }
+}

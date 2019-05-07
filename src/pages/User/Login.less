@@ -1,0 +1,44 @@
+@import '~antd/lib/style/themes/default.less';
+@import '~@/styles/variable.less';
+
+.main {
+    width: 388px;
+    margin: 0 auto;
+    padding: 30px 40px;
+    background: #fff;
+    border-radius: 3%;
+    @media screen and (max-width: @screen-sm) {
+        width: 95%;
+    }
+    
+    .topTitle {
+        font-size: 28px;
+        font-weight: 700;
+        color: @themeLightGreen;
+        text-align: center;
+        padding-bottom: 50px;
+    }
+    .icon {
+        margin-left: 16px;
+        color: rgba(0, 0, 0, 0.2);
+        font-size: 24px;
+        vertical-align: middle;
+        cursor: pointer;
+        transition: color 0.3s;
+
+        &:hover {
+            color: @primary-color;
+        }
+    }
+
+    .other {
+        margin-top: 24px;
+        line-height: 22px;
+        text-align: left;
+
+        .register {
+            float: right;
+        }
+    }
+}
+
