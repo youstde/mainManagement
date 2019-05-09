@@ -116,6 +116,7 @@ export default {
     manifest: {
         basePath: '/',
     },
+    hash: true,
 
     chainWebpack: webpackPlugin,
 }
