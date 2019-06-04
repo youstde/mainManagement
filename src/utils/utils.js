@@ -7,6 +7,24 @@ export function fixedZero(val) {
     return val * 1 < 10 ? `0${val}` : val
 }
 
+/**
+ * 过滤antdform中value
+ * @param {*} values
+ * @param {*} ignore 需要忽略的键值
+ */
+export function filterFormItemValue(values, ignoreKeys) {
+    const newObj = {}
+    // eslint-disable-next-line array-callback-return
+    Object.keys(values).some(key => {
+        if (ignoreKeys.indexOf(key) === -1) {
+            newObj[key] = String.prototype.replace.call(values[key], /\s/g, '')
+        } else {
+            newObj[key] = values[key]
+        }
+    })
+    return newObj
+}
+
 export function getTimeDistance(type) {
     const now = new Date()
     const oneDay = 1000 * 60 * 60 * 24

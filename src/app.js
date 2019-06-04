@@ -64,13 +64,13 @@ export function render(oldRender) {
     }
 
     // 获取权限
-    getAllAuthorities().then(res => {
-        if (res && res.success) {
-            allAuthorities = res.data
-            oldRender()
-        }
-    })
+    // getAllAuthorities().then(res => {
+    //     if (res && res.success) {
+    //         allAuthorities = res.data
+    //         oldRender()
+    //     }
+    // })
 
     // 测试用
-    // oldRender()
+    oldRender()
 }

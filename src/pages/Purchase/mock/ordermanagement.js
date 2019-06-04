@@ -1,0 +1,23 @@
+export default [
+    {
+        id: 132,
+        orderDate: '2019-03-23',
+        skuId: '124',
+        goodsImg: '',
+        skuName: 'fsdifds',
+        orderStore: '南京路店',
+        orderNum: 32,
+        state: '未处理',
+        goodsClass: 'sdfidsf',
+        goodsType: 1,
+        area: '南京',
+        storecase: '两行',
+        processcase: '半加工',
+        outpackage: '43*23',
+        innerpackage: '32*32',
+        level: 3,
+        brand: 'adidas',
+        size: '32',
+        sizeNum: '32',
+    },
+]

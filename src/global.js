@@ -59,3 +59,18 @@ if (pwa) {
         })
     })
 }
+
+window.onMessage = (name, callback) => {
+    // eslint-disable-next-line no-multi-assign
+    const msgs = (window.onMessage[name] = window.onMessage[name] || [])
+    if (msgs.indexOf(callback) === -1) {
+        msgs.push(callback)
+    }
+}
+
+window.sendMessage = (name, param) => {
+    const msgs = window.onMessage[name] || []
+    msgs.forEach(function(msg) {
+        msg(param)
+    })
+}

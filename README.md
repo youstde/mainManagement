@@ -35,3 +35,9 @@
 常用的属性
 
 - hideInMenu 是否在菜单中隐藏
+
+
+
+### tips
+#### 1.tabel中每行的key的设置，我设置的是数据中的id，这个到时候调接口的时候根据实际情况去调整 荔枝： /purchase/ordermanagement
+
