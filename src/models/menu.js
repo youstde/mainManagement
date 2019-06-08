@@ -4,8 +4,36 @@ import Authorized from '@/utils/Authorized'
 
 const { check } = Authorized
 
+// 根据权限处理所有的路由
+function ergodicRoutesByAuths(routes, authorities) {
+    for (let i = 0; i < routes.length; i += 1) {
+        const element = routes[i]
+        if (element.name && !element.hideInMenu) {
+            // 通过path 生成权限代码， '/a/b/c' --> 'a:b:c'
+            const pathArr = element.path.split('/')
+            if (pathArr[0] === '') {
+                pathArr.shift()
+            }
+            const code = pathArr.join(':')
+            element.code = code
+            // 对临时要显示，又没有权限的处理
+            if (!element.temp) {
+                // 处理路由，没有权限的直接移出
+                if (!authorities.includes(`${code}:view`)) {
+                    routes.splice(i, 1)
+                    i -= 1
+                }
+            }
+        }
+        if (element.routes) {
+            element.routes = ergodicRoutesByAuths(element.routes, authorities)
+        }
+    }
+    return routes
+}
+
 // Conversion router to menu.
-function formatter(data, parentAuthority, parentName) {
+function formatter(data /* , parentAuthority */, parentName) {
     return data
         .map(item => {
             if (!item.name || !item.path) {
@@ -25,10 +53,10 @@ function formatter(data, parentAuthority, parentName) {
                 ...item,
                 name: item.name,
                 locale,
-                authority: item.authority || parentAuthority,
+                // authority: item.authority || parentAuthority,
             }
             if (item.routes) {
-                const children = formatter(item.routes, item.authority, locale)
+                const children = formatter(item.routes /* , item.authority */, locale)
                 // Reduce memory usage
                 result.children = children
             }
@@ -98,15 +126,24 @@ export default {
     },
 
     effects: {
-        *getMenuData({ payload }, { put }) {
-            const { routes, authority } = payload
-            // TODO: 在这里 将路由处理成 菜单
-            const originalMenuData = memoizeOneFormatter(routes, authority)
+        *getMenuData({ payload }, { put, select }) {
+            const { routes } = payload
+            const authorities = yield select(state => {
+                console.log('state:', state)
+                return state.global.authorities
+            })
+            // 根据获取到的权限处理路由
+            const routerData = ergodicRoutesByAuths(routes, authorities)
+            // console.log(routes)
+            // 将路由处理成菜单，，并缓存
+            const originalMenuData = memoizeOneFormatter(routerData)
+            // 过滤菜单
             const menuData = filterMenuData(originalMenuData)
+            // 过滤面包屑
             const breadcrumbNameMap = memoizeOneGetBreadcrumbNameMap(originalMenuData)
             yield put({
                 type: 'save',
-                payload: { menuData, breadcrumbNameMap, routerData: routes },
+                payload: { menuData, breadcrumbNameMap, routerData },
             })
         },
     },

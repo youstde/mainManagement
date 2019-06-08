@@ -37,6 +37,9 @@
 - hideInMenu 是否在菜单中隐藏
 
 
+### Can't perform a React state update on an unmounted component报错问题
+> 页面路由：/purchase/manualcreateorder
+[Can't perform a React state update on an unmounted component](https://github.com/material-components/material-components-web-react/issues/434)
 
 ### tips
 #### 1.tabel中每行的key的设置，我设置的是数据中的id，这个到时候调接口的时候根据实际情况去调整 荔枝： /purchase/ordermanagement

@@ -108,6 +108,12 @@ class PurchaseOrderManagement extends Component {
         }
     }
 
+    // 手动生成采购单
+    manualCreateOrder = () => {
+        const { history } = this.props
+        history.push('/purchase/manualcreateorder')
+    }
+
     render() {
         const { dataSrouce, pagination, selectedRowKeys } = this.state
 
@@ -146,7 +152,7 @@ class PurchaseOrderManagement extends Component {
                     buttonGroup={[{ onSearch: this.handleFormSearch }]}
                 />
                 <div style={{ textAlign: 'right', paddingBottom: '10px' }}>
-                    <Button onClick={() => this.editSome()} size="small" type="default">
+                    <Button onClick={() => this.manualCreateOrder()} size="small" type="default">
                         手动生成采购单
                     </Button>
                     <span>&nbsp;</span>

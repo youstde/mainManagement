@@ -1,21 +1,67 @@
 import React, { Component } from 'react'
 import { connect } from 'dva'
 import { formatMessage, FormattedMessage } from 'umi/locale'
-import Link from 'umi/link'
-import { Checkbox, Alert, Icon } from 'antd'
+import { Alert, message } from 'antd'
+import md5 from 'md5'
+
 import Login from '@/components/Login'
 import styles from './Login.less'
 
-const { Tab, UserName, Password, Mobile, Captcha, Submit } = Login
+import { login } from './services/index'
 
-@connect(({ login, loading }) => ({
+const { UserName, Password, Submit } = Login
+
+@connect(({ loading }) => ({
     login,
     submitting: loading.effects['login/login'],
 }))
 class LoginPage extends Component {
     state = {
         type: 'account',
-        autoLogin: true,
+        isLoading: false,
+    }
+
+    componentDidMount() {
+        const { history } = this.props
+        const userInfoStr = localStorage.getItem('user_info')
+        if (userInfoStr) {
+            history.replace('/')
+        }
+    }
+
+    handleSubmit = (error, value) => {
+        this.setState({
+            isLoading: true,
+        })
+        if (!error) {
+            const { mobile, password } = value
+            login({
+                t: 'login',
+                mobile,
+                password: md5(password),
+            }).then(res => {
+                if (res && res.errcode === 0) {
+                    const { data: userInfo } = res
+                    const { history } = this.props
+                    localStorage.setItem('user_info', JSON.stringify(userInfo.user))
+                    message.success('登录成功!', 2, () => {
+                        this.setState({
+                            isLoading: false,
+                        })
+                        history.push('/')
+                    })
+                } else {
+                    this.setState({
+                        isLoading: false,
+                    })
+                    message.error(res.message || '')
+                }
+            })
+        } else {
+            this.setState({
+                isLoading: false,
+            })
+        }
     }
 
     onTabChange = type => {
@@ -39,33 +85,13 @@ class LoginPage extends Component {
             })
         })
 
-    handleSubmit = (err, values) => {
-        const { type } = this.state
-        if (!err) {
-            const { dispatch } = this.props
-            dispatch({
-                type: 'login/login',
-                payload: {
-                    ...values,
-                    type,
-                },
-            })
-        }
-    }
-
-    changeAutoLogin = e => {
-        this.setState({
-            autoLogin: e.target.checked,
-        })
-    }
-
     renderMessage = content => (
         <Alert style={{ marginBottom: 24 }} message={content} type="error" showIcon />
     )
 
     render() {
-        const { login, submitting } = this.props
-        const { type, autoLogin } = this.state
+        const { submitting } = this.props
+        const { type, isLoading } = this.state
         return (
             <div className={styles.main}>
                 <div className={styles.topTitle}>后台业务管理系统</div>
@@ -77,40 +103,39 @@ class LoginPage extends Component {
                         this.loginForm = form
                     }}
                 >
-                    
                     {login.status === 'error' &&
-                            login.type === 'account' &&
-                            !submitting &&
-                            this.renderMessage(
-                                formatMessage({ id: 'app.login.message-invalid-credentials' })
-                            )}
-                        <UserName
-                            name="userName"
-                            placeholder='请输入用户名'
-                            rules={[
-                                {
-                                    required: true,
-                                    message: formatMessage({ id: 'validation.userName.required' }),
-                                },
-                            ]}
-                        />
-                        <Password
-                            name="password"
-                            placeholder='请输入登录密码'
-                            rules={[
-                                {
-                                    required: true,
-                                    message: formatMessage({ id: 'validation.password.required' }),
-                                },
-                            ]}
-                            onPressEnter={e => {
-                                e.preventDefault()
-                                this.loginForm.validateFields(this.handleSubmit)
-                            }}
-                        />
-                        <Submit loading={submitting}>
-                            <FormattedMessage id="app.login.login" />
-                        </Submit>
+                        login.type === 'account' &&
+                        !submitting &&
+                        this.renderMessage(
+                            formatMessage({ id: 'app.login.message-invalid-credentials' })
+                        )}
+                    <UserName
+                        name="mobile"
+                        placeholder="请输入用户名"
+                        rules={[
+                            {
+                                message: formatMessage({ id: 'validation.userName.required' }),
+                                required: true,
+                            },
+                        ]}
+                    />
+                    <Password
+                        name="password"
+                        placeholder="请输入登录密码"
+                        rules={[
+                            {
+                                required: true,
+                                message: formatMessage({ id: 'validation.password.required' }),
+                            },
+                        ]}
+                        onPressEnter={e => {
+                            e.preventDefault()
+                            this.loginForm.validateFields(this.handleSubmit)
+                        }}
+                    />
+                    <Submit loading={isLoading}>
+                        <FormattedMessage id="app.login.login" />
+                    </Submit>
                 </Login>
             </div>
         )

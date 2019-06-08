@@ -1,8 +1,6 @@
+/* eslint-disable no-underscore-dangle */
 import React, { Component } from 'react'
 import { Table, Input, Button, Form } from 'antd'
-
-// mock
-import editTabelMock from '../../mock/editTabel'
 
 const EditableContext = React.createContext()
 
@@ -97,24 +95,33 @@ class EditableCell extends Component {
 }
 
 // eslint-disable-next-line react/no-multi-comp
-class EditableTable extends React.Component {
+class EditableTable extends Component {
+    _isMounted = false
+
     constructor(props) {
         super(props)
-
+        const { tabelData } = this.props
         this.state = {
-            dataSource: editTabelMock || [],
+            dataSource: tabelData || [],
             count: 2,
         }
     }
 
-    handleAdd = () => {
+    componentDidMount() {
+        this._isMounted = true
+        window.onMessage('update:dataSource', data => {
+            data.key = Date.now()
+            this.handleAdd(data)
+        })
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false
+    }
+
+    handleAdd = data => {
         const { count, dataSource } = this.state
-        const newData = {
-            key: count,
-            name: `Edward King ${count}`,
-            age: 32,
-            address: `London, Park Lane no. ${count}`,
-        }
+        const newData = data || {}
         this.setState({
             dataSource: [...dataSource, newData],
             count: count + 1,

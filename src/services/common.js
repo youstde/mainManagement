@@ -1,9 +1,17 @@
 import createAPI from '@/utils/createAPI'
 
-// 获取该用户拥有的所有权限
-export const getAllAuthorities = async (params = {}) =>
-    createAPI('/api/v1/auth/getAllMenus', 'get', {
+// get请求的基础
+export const baseGet = async (params = {}) =>
+    createAPI('/admin', 'get', {
         params,
+    })
+
+// 获取该用户拥有的所有权限
+export const getAllAuthorities = async () =>
+    createAPI('/admin', 'get', {
+        params: {
+            t: 'menus',
+        },
     })
 
 // 获取所有企业列表

@@ -1,11 +1,13 @@
 import React, { PureComponent } from 'react'
-import { /* Spin,  */ Tag /* , Menu, Icon, Avatar */ } from 'antd'
+import { Spin, Tag, Menu, Icon, Avatar, message } from 'antd'
 import moment from 'moment'
 import groupBy from 'lodash/groupBy'
 // import NoticeIcon from '../NoticeIcon'
 // import HeaderSearch from '../HeaderSearch'
-// import HeaderDropdown from '../HeaderDropdown'
+import HeaderDropdown from '../HeaderDropdown'
+import { getUserInfo } from '@/utils/utils'
 import styles from './index.less'
+import { logout } from '@/pages/User/services/index'
 
 export default class GlobalHeaderRight extends PureComponent {
     getNoticeData() {
@@ -63,30 +65,47 @@ export default class GlobalHeaderRight extends PureComponent {
 
     render() {
         const {
-            // currentUser,
             // fetchingNotices,
             // onNoticeVisibleChange,
             // onMenuClick,
             // onNoticeClear,
             theme,
         } = this.props
-        // const menu = (
-        //     <Menu className={styles.menu} selectedKeys={[]} onClick={onMenuClick}>
-        //         <Menu.Item key="userCenter">
-        //             <Icon type="user" />
-        //             用户中心
-        //         </Menu.Item>
-        //         <Menu.Item key="userinfo">
-        //             <Icon type="setting" />
-        //             用户设置
-        //         </Menu.Item>
-        //         <Menu.Divider />
-        //         <Menu.Item key="logout">
-        //             <Icon type="logout" />
-        //             登出
-        //         </Menu.Item>
-        //     </Menu>
-        // )
+        const currentUser = getUserInfo()
+
+        const onMenuClick = e => {
+            console.log(e)
+            if (e && e.key === 'logout') {
+                logout({
+                    t: 'logout',
+                }).then(res => {
+                    if (res && res.errcode === 0) {
+                        localStorage.setItem('user_info', '')
+                        const { history } = this.props
+                        message.success('退出成功!', 2, () => {
+                            history.push('/user/login')
+                        })
+                    }
+                })
+            }
+        }
+        const menu = (
+            <Menu className={styles.menu} selectedKeys={[]} onClick={onMenuClick}>
+                {/* <Menu.Item key="userCenter">
+                    <Icon type="user" />
+                    用户中心
+                </Menu.Item> */}
+                <Menu.Item key="userinfo">
+                    <Icon type="setting" />
+                    修改密码
+                </Menu.Item>
+                <Menu.Divider />
+                <Menu.Item key="logout">
+                    <Icon type="logout" />
+                    登出
+                </Menu.Item>
+            </Menu>
+        )
         // const noticeData = this.getNoticeData()
         // const unreadMsg = this.getUnreadData(noticeData)
         let className = styles.right
@@ -158,13 +177,14 @@ export default class GlobalHeaderRight extends PureComponent {
                         showViewMore
                     />
                 </NoticeIcon> */}
-                {/* {currentUser.name ? (
+                {currentUser.name ? (
                     <HeaderDropdown overlay={menu}>
                         <span className={`${styles.action} ${styles.account}`}>
                             <Avatar
                                 size="small"
                                 className={styles.avatar}
-                                src={currentUser.avatar}
+                                style={{ backgroundColor: '#f1f1f1' }}
+                                icon="user"
                                 alt="avatar"
                             />
                             <span className={styles.name}>{currentUser.name}</span>
@@ -172,7 +192,7 @@ export default class GlobalHeaderRight extends PureComponent {
                     </HeaderDropdown>
                 ) : (
                     <Spin size="small" style={{ marginLeft: 8, marginRight: 8 }} />
-                )} */}
+                )}
             </div>
         )
     }

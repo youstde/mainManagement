@@ -48,22 +48,21 @@ class BasicLayout extends React.Component {
     componentDidMount() {
         const {
             dispatch,
-            route: { routes, authority },
+            route: { routes },
         } = this.props
-        // TODO: 请求当前的用户
-        // dispatch({
-        //     type: 'user/fetchCurrent',
-        // })
+        dispatch({
+            type: 'user/fetchCurrent',
+        })
         dispatch({
             type: 'setting/getSetting',
         })
         dispatch({
-            type: 'menu/getMenuData',
-            payload: { routes, authority },
-        })
-
-        dispatch({
             type: 'global/fetchAuthorities',
+        }).then(() => {
+            dispatch({
+                type: 'menu/getMenuData',
+                payload: { routes },
+            })
         })
     }
 

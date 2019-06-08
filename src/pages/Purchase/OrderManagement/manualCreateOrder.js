@@ -4,9 +4,8 @@ import { Form, Input, DatePicker, Row, Col, Select, Upload, Modal, Icon } from '
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper'
 import EditableTable from './components/editTabel'
-
-// mock
-import editTabelMock from '../mock/editTabel'
+import CreateTabelItem from './createTabelItem'
+import Button from '@/components/Button'
 
 import { uploadImg } from './services/index'
 
@@ -25,9 +24,8 @@ function getBase64(file) {
 const fetchFunction = async () => ({ data: { list: [], count: 0 }, success: true })
 
 @connect(() => ({}))
-class PurchaseCreateOrder extends Component {
+class PurchaseManualCreateOrder extends Component {
     state = {
-        tabelData: editTabelMock || [],
         providers: [
             {
                 label: '南京鲜果批发',
@@ -42,6 +40,7 @@ class PurchaseCreateOrder extends Component {
                 id: 3,
             },
         ],
+        showCreateOrderItem: false,
         previewVisible: false,
         previewImage: '',
         imgList: [],
@@ -118,12 +117,32 @@ class PurchaseCreateOrder extends Component {
 
     handleImgChange = ({ fileList }) => this.setState({ fileList })
 
+    handleCreateOrder = () => {}
+
+    handleCancelCreateItem = () => {
+        this.setState({
+            showCreateOrderItem: false,
+        })
+    }
+
+    handleShowCreateOrder = () => {
+        this.setState({
+            showCreateOrderItem: true,
+        })
+    }
+
     render() {
         const {
             form: { getFieldDecorator },
         } = this.props
         // 供应商列表Mock
-        const { providers, previewVisible, previewImage, fileList, tabelData } = this.state
+        const {
+            providers,
+            previewVisible,
+            previewImage,
+            fileList,
+            showCreateOrderItem,
+        } = this.state
 
         const columns = [
             {
@@ -179,7 +198,7 @@ class PurchaseCreateOrder extends Component {
                 dataIndex: 'sizeNum',
             },
             {
-                title: '订货门店',
+                title: '订货门店名称',
                 dataIndex: 'orderStore',
             },
             {
@@ -226,6 +245,7 @@ class PurchaseCreateOrder extends Component {
         }
 
         const providerOptionsArr = []
+        // eslint-disable-next-line array-callback-return
         providers.some(item => {
             providerOptionsArr.push(
                 <Option key={item.id} value={item.id}>
@@ -344,10 +364,29 @@ class PurchaseCreateOrder extends Component {
                         </div>
                     </Col>
                 </Row>
+                <Modal
+                    title="填写订单数据"
+                    visible={showCreateOrderItem}
+                    footer={null}
+                    onCancel={this.handleCancelCreateItem}
+                    destroyOnClose
+                >
+                    <CreateTabelItem handleCancelCreateItem={this.handleCancelCreateItem} />
+                </Modal>
+                <div style={{ textAlign: 'right', padding: '20px 0' }}>
+                    <Button
+                        onClick={() => this.handleShowCreateOrder()}
+                        size="small"
+                        type="default"
+                    >
+                        创建订单
+                    </Button>
+                </div>
                 <EditableTable
+                    rowKey={record => record.id}
                     tabelLocalType={0}
+                    tabelData={null}
                     tabelColumns={columns}
-                    tabelData={tabelData}
                     handleSubmit={this.handleSubmit}
                 />
             </PageHeaderWrapper>
@@ -355,4 +394,4 @@ class PurchaseCreateOrder extends Component {
     }
 }
 
-export default Form.create({ name: 'PurchaseCreateOrder' })(PurchaseCreateOrder)
+export default Form.create({ name: 'PurchaseManualCreateOrder' })(PurchaseManualCreateOrder)

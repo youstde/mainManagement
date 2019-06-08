@@ -1,7 +1,8 @@
 import axios from 'axios'
 import { Modal } from 'antd'
-import { mainSite } from '@/utils/utils'
 import { getSession } from '@/utils/session'
+import { uuid, createSign, mainSite } from '@/utils/utils'
+import md5 from 'md5'
 
 const loading = {
     show() {
@@ -159,6 +160,17 @@ export default (devUrl, prodTag) => {
     )
 
     const createAPI = (url, method, config) => {
+        const { params } = config
+        params.sk = uuid()
+        params.uk = 'y2Qmlq6dtn4HXsw6OT4auXP-6RuOJ50mhMFiM1bLtnO4x4HXkflvQxKAlivNHSrC'
+        params.ver = '0.0.1'
+        params.ts = Date.parse(new Date().toUTCString()) / 1000
+        const paramsArr = Object.keys(params).map(key => {
+            return params[key]
+        })
+        params.sign = md5(createSign(paramsArr))
+        config.params = params
+
         return instance({
             url,
             method,
