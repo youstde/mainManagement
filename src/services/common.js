@@ -6,6 +6,12 @@ export const baseGet = async (params = {}) =>
         params,
     })
 
+// 门店get请求的基础
+export const storeBaseGet = async (params = {}) =>
+    createAPI('/merchant', 'get', {
+        params,
+    })
+
 // 获取该用户拥有的所有权限
 export const getAllAuthorities = async () =>
     createAPI('/admin', 'get', {

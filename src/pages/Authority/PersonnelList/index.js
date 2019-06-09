@@ -1,16 +1,24 @@
 import React, { Component } from 'react'
 import { connect } from 'dva'
+import { Popconfirm, message, Modal } from 'antd'
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper'
 import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
+import Button from '@/components/Button'
 import PersonnelStateSwitch from './components/stateCheck'
+import ConnectRole from './connectRole'
+import EditPerson from './test'
 
 import { baseGet } from '@/services/common'
 
 @connect(() => ({}))
 class AuthorityPersonnelList extends Component {
     state = {
+        roleList: [],
+        activeNumberId: '',
+        activeMember: {},
+        showConnectRole: false,
         searchCondition: {}, // 搜索条件
         dataSrouce: [], // 表格数据
         pagination: {
@@ -22,6 +30,8 @@ class AuthorityPersonnelList extends Component {
 
     componentDidMount() {
         this.fetchData()
+        // 获取角色列表
+        this.fetchRoleList()
     }
 
     // 请求表格的数据
@@ -29,27 +39,57 @@ class AuthorityPersonnelList extends Component {
         const { pageNum, ...params } = parmas
         const { pagination, searchCondition } = this.state
 
-        baseGet({
+        const query = {
             t: 'member.list',
             type: 1,
-            mch_id: '', // 门店Id
             size: pagination.pageSize,
             index: pageNum || pagination.current,
-            ...searchCondition,
             ...params,
-        }).then(res => {
-            console.log(res)
+        }
+        if (searchCondition.q) {
+            query.q = searchCondition.q
+        }
+
+        if (searchCondition.roles) {
+            query.roles = searchCondition.roles
+        }
+
+        baseGet(query).then(res => {
             if (res && res.errcode === 0) {
-                const {
-                    data,
-                    pages: { count },
-                } = res
+                if (res.data.length) {
+                    const {
+                        data,
+                        pages: { count },
+                    } = res
+                    this.setState({
+                        dataSrouce: data,
+                        pagination: {
+                            ...pagination,
+                            total: count,
+                        },
+                    })
+                } else {
+                    this.setState({
+                        dataSrouce: [],
+                        pagination: {
+                            ...pagination,
+                            total: 0,
+                        },
+                    })
+                }
+            }
+        })
+    }
+
+    fetchRoleList = () => {
+        baseGet({
+            t: 'role.list',
+            size: 100,
+            index: 1,
+        }).then(res => {
+            if (res && res.errcode === 0) {
                 this.setState({
-                    dataSrouce: data,
-                    pagination: {
-                        ...pagination,
-                        total: count,
-                    },
+                    roleList: res.data,
                 })
             }
         })
@@ -72,9 +112,6 @@ class AuthorityPersonnelList extends Component {
             }
         )
     }
-
-    // 查询表单下载
-    handleFromDownload = values => {}
 
     // 切换分页
     handleChangePage = page => {
@@ -123,8 +160,69 @@ class AuthorityPersonnelList extends Component {
         }
     }
 
+    // 删除某个成员
+    confirmdelete = numberId => {
+        baseGet({
+            t: 'member.status',
+            id: numberId,
+            action: 'delete',
+        }).then(res => {
+            if (res && res.errcode === 0) {
+                message.success('删除成功')
+            }
+        })
+    }
+
+    handleHideConnectRole = () => {
+        this.setState({
+            showConnectRole: false,
+            activeNumberId: '',
+        })
+        this.fetchData()
+    }
+
+    connectRole = numberId => {
+        this.setState({
+            showConnectRole: true,
+            activeNumberId: numberId,
+        })
+    }
+
+    editSome = member => {
+        this.setState({
+            showEditNumber: true,
+            activeMember: member,
+        })
+    }
+
+    handleHideEditNumber = () => {
+        this.setState({
+            showEditNumber: false,
+            activeMember: {},
+        })
+        this.fetchData()
+    }
+
     render() {
-        const { dataSrouce, pagination } = this.state
+        const {
+            dataSrouce,
+            pagination,
+            showConnectRole,
+            activeNumberId,
+            showEditNumber,
+            roleList,
+            activeMember,
+        } = this.state
+
+        function createRoleOptions() {
+            const roleOptions = roleList.map(item => {
+                return {
+                    key: item.id,
+                    value: item.name,
+                }
+            })
+            return roleOptions
+        }
 
         return (
             <PageHeaderWrapper>
@@ -138,12 +236,17 @@ class AuthorityPersonnelList extends Component {
                         {
                             label: '所属角色',
                             type: 'select',
-                            options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
+                            options: createRoleOptions(),
                             key: 'roles',
                         },
                     ]}
                     buttonGroup={[{ onSearch: this.handleFormSearch }]}
                 />
+                <div style={{ textAlign: 'right', paddingBottom: '10px' }}>
+                    <Button onClick={() => this.editSome()} size="small" type="default">
+                        新增成员
+                    </Button>
+                </div>
                 <BasicTable
                     columns={[
                         {
@@ -196,7 +299,40 @@ class AuthorityPersonnelList extends Component {
                         },
                         {
                             type: 'oprate',
-                            buttons: [{ text: '查看详情' }, { text: '编辑' }],
+                            render: (_, member) => {
+                                return (
+                                    <div style={{ lineHeight: 2 }}>
+                                        <Button
+                                            onClick={() => this.connectRole(member.id)}
+                                            size="small"
+                                            type="default"
+                                        >
+                                            关联角色
+                                        </Button>
+                                        <span>&nbsp;</span>
+                                        <Button
+                                            onClick={() => this.editSome(member)}
+                                            size="small"
+                                            type="default"
+                                        >
+                                            编辑
+                                        </Button>
+                                        <span>&nbsp;</span>
+                                        <Popconfirm
+                                            title="确定删除该成员吗?"
+                                            onConfirm={() => {
+                                                this.confirmdelete(member.id)
+                                            }}
+                                            okText="确定"
+                                            cancelText="取消"
+                                        >
+                                            <Button size="small" type="danger">
+                                                删除
+                                            </Button>
+                                        </Popconfirm>
+                                    </div>
+                                )
+                            },
                         },
                     ]}
                     dataSource={dataSrouce}
@@ -205,6 +341,29 @@ class AuthorityPersonnelList extends Component {
                         onChange: this.handleChangePage,
                     }}
                 />
+                <Modal
+                    title="关联角色"
+                    footer={null}
+                    width={680}
+                    destroyOnClose
+                    visible={showConnectRole}
+                    onCancel={this.handleHideConnectRole}
+                >
+                    <ConnectRole
+                        numberId={activeNumberId}
+                        cancelModal={this.handleHideConnectRole}
+                    />
+                </Modal>
+                <Modal
+                    title="编辑成员"
+                    footer={null}
+                    width={680}
+                    destroyOnClose
+                    visible={showEditNumber}
+                    onCancel={this.handleHideEditNumber}
+                >
+                    <EditPerson members={activeMember} cancelModal={this.handleHideEditNumber} />
+                </Modal>
             </PageHeaderWrapper>
         )
     }
