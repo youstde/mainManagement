@@ -415,15 +415,9 @@ export const mainSite = (url = '') => {
     if (isDevelopment) {
         // 开发环境时，手动修改这里的ip，连接java电脑上
         // TODO: 修改nginx配置，改成路由
-        baseUrl = 'http://project.znckj.com'
-    } else if (window.location.hostname.indexOf('test') > -1) {
-        baseUrl = 'http://test.znbill.com:9091'
-    } else if (window.location.hostname.indexOf('pre2') > -1) {
-        baseUrl = 'https://pre2.admin.znbill.com'
-    } else if (window.location.hostname.indexOf('pre') > -1) {
-        baseUrl = 'https://pre.admin.znbill.com'
+        baseUrl = ''
     } else {
-        baseUrl = 'https://admin.znbill.com'
+        baseUrl = ''
     }
     const theUrl = url.replace(/^\//, '')
 

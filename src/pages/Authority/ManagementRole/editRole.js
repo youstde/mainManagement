@@ -21,13 +21,16 @@ class EditRole extends PureComponent {
         } = this.props
         form.validateFieldsAndScroll((err, values) => {
             if (!err) {
-                baseGet({
+                const options = {
                     t: 'role.save',
-                    id,
                     ...values,
-                }).then(res => {
+                }
+                if (id) {
+                    options.id = id
+                }
+                baseGet(options).then(res => {
                     if (res && res.errcode === 0) {
-                        message.success('编辑成功!', 2)
+                        message.success('操作成功!', 2)
                         onCancel()
                     }
                 })

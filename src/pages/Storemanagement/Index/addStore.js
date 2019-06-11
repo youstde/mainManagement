@@ -1,32 +1,17 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'dva'
-import { Form, Input, Button, message } from 'antd'
+import { Form, Input, Button, message, Select } from 'antd'
 
 import { storeBaseGet } from '@/services/common'
+import { baseConfig } from '@/utils/baseConfig'
+
+const { Option } = Select
 
 @connect(() => ({}))
-class SetAdmin extends PureComponent {
-    state = {
-        dataSource: {},
-    }
+class AddStore extends PureComponent {
+    state = {}
 
-    componentDidMount() {
-        this.fetchAdminData()
-    }
-
-    fetchAdminData = () => {
-        const { storeId } = this.props
-        storeBaseGet({
-            t: 'manager.get',
-            id: storeId,
-        }).then(res => {
-            if (res && res.errcode === 0) {
-                this.setState({
-                    dataSource: res.data,
-                })
-            }
-        })
-    }
+    componentDidMount() {}
 
     validateToPhone = (rule, value, callback) => {
         if (value && /^[1]([3-9])[0-9]{9}$/.test(value)) {
@@ -47,18 +32,20 @@ class SetAdmin extends PureComponent {
 
     handleSubmit = e => {
         e.preventDefault()
-        const { form, handleCancel, storeId } = this.props
+        const { form, handleCancel } = this.props
         form.validateFields((err, values) => {
+            console.log('values:', values)
             if (!err) {
                 storeBaseGet({
-                    t: 'manager.set',
-                    id: storeId,
+                    t: 'save',
                     mobile: values.mobile,
                     name: values.name,
-                    pwd: values.password,
+                    level: values.level,
+                    contacter: values.contacter,
+                    address: values.address,
                 }).then(res => {
                     if (res && res.errcode === 0) {
-                        message.success('设置成功!', 2)
+                        message.success('添加成功!', 2)
                         handleCancel()
                     }
                 })
@@ -71,7 +58,6 @@ class SetAdmin extends PureComponent {
             form: { getFieldDecorator },
         } = this.props
         const { handleSubmit } = this
-        const { dataSource } = this.state
 
         const formItemLayout = {
             labelCol: {
@@ -91,23 +77,48 @@ class SetAdmin extends PureComponent {
             },
         }
 
+        function createOptions() {
+            const options = Object.keys(baseConfig.mch_levels).map(key => {
+                return <Option value={key}>{baseConfig.mch_levels[key]}</Option>
+            })
+            return options
+        }
+
         return (
             <Fragment>
                 <Form {...formItemLayout} onSubmit={handleSubmit}>
-                    <Form.Item label="管理员姓名">
+                    <Form.Item label="门店名称">
                         {getFieldDecorator('name', {
-                            initialValue: dataSource.name,
                             rules: [
                                 {
                                     required: true,
-                                    message: '管理员姓名不能为空!',
+                                    message: '门店名称不能为空!',
                                 },
                             ],
-                        })(<Input placeholder="姓名" />)}
+                        })(<Input placeholder="请输入门店名称" />)}
                     </Form.Item>
-                    <Form.Item label="管理员账号">
+                    <Form.Item label="门店地址">
+                        {getFieldDecorator('address', {
+                            rules: [
+                                {
+                                    required: true,
+                                    message: '门店地址不能为空!',
+                                },
+                            ],
+                        })(<Input placeholder="请输入门店地址" />)}
+                    </Form.Item>
+                    <Form.Item label="门店负责人">
+                        {getFieldDecorator('contacter', {
+                            rules: [
+                                {
+                                    required: true,
+                                    message: '门店负责人不能为空!',
+                                },
+                            ],
+                        })(<Input placeholder="请输入门店负责人" />)}
+                    </Form.Item>
+                    <Form.Item label="门店负责人手机">
                         {getFieldDecorator('mobile', {
-                            initialValue: dataSource.mobile,
                             rules: [
                                 {
                                     required: true,
@@ -117,32 +128,17 @@ class SetAdmin extends PureComponent {
                                     validator: this.validateToPhone,
                                 },
                             ],
-                        })(<Input type="number" placeholder="手机号码" />)}
+                        })(<Input type="number" placeholder="请输入门店负责人手机" />)}
                     </Form.Item>
-                    <Form.Item label="管理员密码">
-                        {getFieldDecorator('password', {
-                            initialValue: dataSource.password,
+                    <Form.Item label="门店类型">
+                        {getFieldDecorator('level', {
                             rules: [
                                 {
                                     required: true,
-                                    message: '密码不能为空!',
+                                    message: '门店类型不能为空!',
                                 },
                             ],
-                        })(<Input.Password placeholder="请输入管理员密码" />)}
-                    </Form.Item>
-                    <Form.Item label="确认密码">
-                        {getFieldDecorator('confirPpassword', {
-                            initialValue: dataSource.password,
-                            rules: [
-                                {
-                                    required: true,
-                                    message: '密码不能为空!',
-                                },
-                                {
-                                    validator: this.compareToFirstPassword,
-                                },
-                            ],
-                        })(<Input.Password placeholder="请确认管理员密码" />)}
+                        })(<Select>{createOptions()}</Select>)}
                     </Form.Item>
                     <Form.Item {...formItemLayoutWithOutLabel}>
                         <Button type="primary" htmlType="submit">
@@ -155,4 +151,4 @@ class SetAdmin extends PureComponent {
     }
 }
 
-export default Form.create({ name: 'set-admin' })(SetAdmin)
+export default Form.create({ name: 'add-store' })(AddStore)

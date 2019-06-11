@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'dva'
-import { Modal } from 'antd'
+import { Modal, message, Popconfirm } from 'antd'
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper'
 import SearchForm from '@/components/SearchForm'
@@ -8,12 +8,11 @@ import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
 import BaseSwitch from '../components/BaseSwitch'
 import SetAdmin from '../components/setAdmin'
+import AddStore from './addStore'
 
-// mock
-import indexMock from '../mock/index'
+import { storeBaseGet } from '@/services/common'
 
-// import { fetchFunction } from '@/services'
-const fetchFunction = async () => ({ data: { list: [], count: 0 }, success: true })
+import { baseConfig } from '@/utils/baseConfig'
 
 @connect(() => ({}))
 class StoremanagementIndex extends Component {
@@ -23,9 +22,11 @@ class StoremanagementIndex extends Component {
     }
 
     state = {
+        activeStoreId: '',
         visibleModal: false,
+        visibleAddStoreModal: false,
         searchCondition: {}, // 搜索条件
-        dataSrouce: indexMock || [], // 表格数据
+        dataSrouce: [], // 表格数据
         pagination: {
             current: 1,
             pageSize: 10,
@@ -34,26 +35,28 @@ class StoremanagementIndex extends Component {
     }
 
     componentDidMount() {
-        // this.fetchData()
+        this.fetchData()
     }
 
     // 请求表格的数据
-    fetchData = (parmas = {}) => {
-        const { pageNum, ...params } = parmas
+    fetchData = () => {
         const { pagination, searchCondition } = this.state
 
-        fetchFunction({
-            pageSize: pagination.pageSize,
-            pageNum: pageNum || pagination.current,
-            ...searchCondition,
-            ...params,
-        }).then(res => {
-            if (res && res.success) {
+        const options = {
+            t: 'list',
+            index: pagination.current,
+            size: pagination.pageSize,
+        }
+        if (searchCondition.q) {
+            options.q = searchCondition.q
+        }
+        storeBaseGet(options).then(res => {
+            if (res && res.errcode === 0) {
                 this.setState({
-                    dataSrouce: res.data.list,
+                    dataSrouce: res.data,
                     pagination: {
                         ...pagination,
-                        total: res.data.count,
+                        total: res.pages.count,
                     },
                 })
             }
@@ -97,54 +100,84 @@ class StoremanagementIndex extends Component {
         )
     }
 
-    toggleState = checked => {
-        const { dataSrouce } = this.state
-        // const { current: { closeLoading } } = this.baseSwitch
-
+    toggleState = (checked, storeId) => {
         if (checked) {
             // 发送请求去启用
-            setTimeout(() => {
-                dataSrouce[0].state = 1
-                this.setState(
-                    {
-                        dataSrouce,
-                    },
-                    () => {
-                        window.sendMessage('toggle:switch', false)
-                    }
-                )
-            }, 1e3)
+            storeBaseGet({
+                t: 'status',
+                id: storeId,
+                action: 'enable',
+            }).then(res => {
+                if (res && res.errcode === 0) {
+                    message.success('启用成功!', 2)
+                    window.sendMessage('toggle:switch', false)
+                    this.fetchData()
+                }
+            })
         } else {
-            setTimeout(() => {
-                dataSrouce[0].state = 0
-                this.setState(
-                    {
-                        dataSrouce,
-                    },
-                    () => {
-                        window.sendMessage('toggle:switch', false)
-                    }
-                )
-            }, 1e3)
+            storeBaseGet({
+                t: 'status',
+                id: storeId,
+                action: 'disable',
+            }).then(res => {
+                if (res && res.errcode === 0) {
+                    message.success('禁用成功!', 2)
+                    window.sendMessage('toggle:switch', false)
+                    this.fetchData()
+                }
+            })
         }
     }
 
     handleCancel = () => {
         this.setState({
             visibleModal: false,
+            activeStoreId: '',
+        })
+        this.fetchData()
+    }
+
+    deleteItem = storeId => {
+        storeBaseGet({
+            t: 'status',
+            id: storeId,
+            action: 'delete',
+        }).then(res => {
+            if (res && res.errcode === 0) {
+                message.success('删除成功!', 2)
+            }
+            this.fetchData()
         })
     }
 
-    deleteItem = () => {}
-
-    handleShowDetail = () => {
+    handleShowDetail = storeId => {
         this.setState({
             visibleModal: true,
+            activeStoreId: storeId,
         })
+    }
+
+    showAddStore = () => {
+        this.setState({
+            visibleAddStoreModal: true,
+        })
+    }
+
+    handleAddStoreCancel = () => {
+        this.setState({
+            visibleAddStoreModal: false,
+        })
+        this.fetchData()
     }
 
     render() {
-        const { dataSrouce, pagination, visibleModal } = this.state
+        const {
+            dataSrouce,
+            pagination,
+            visibleModal,
+            visibleAddStoreModal,
+            activeStoreId,
+        } = this.state
         const { toggleState, handleCancel } = this
 
         return (
@@ -154,67 +187,80 @@ class StoremanagementIndex extends Component {
                         {
                             label: '门店名称',
                             type: 'input',
-                            key: 'storeName',
+                            key: 'q',
                         },
                     ]}
                     buttonGroup={[{ onSearch: this.handleFormSearch }]}
                 />
+                <div style={{ textAlign: 'right', paddingBottom: '10px' }}>
+                    <Button onClick={() => this.showAddStore()} size="small" type="default">
+                        新增门店
+                    </Button>
+                </div>
                 <BasicTable
                     columns={[
                         {
                             title: '门店名称',
-                            dataIndex: 'storeName',
+                            dataIndex: 'name',
                         },
                         {
                             title: '门店地址',
-                            dataIndex: 'storeAdress',
+                            dataIndex: 'address',
                             type: 'longText',
                         },
                         {
                             title: '门店负责人',
-                            dataIndex: 'storeAdmin',
+                            dataIndex: 'contacter',
                         },
                         {
                             title: '联系手机',
-                            dataIndex: 'phone',
+                            dataIndex: 'mobile',
                         },
                         {
                             dataIndex: 'storeType',
                             title: '门店类型',
+                            render: (_, { level }) => <div>{baseConfig.mch_levels[level]}</div>,
                         },
                         {
                             dataIndex: 'state',
                             title: '状态',
-                            render: state => (
-                                <div>
-                                    <BaseSwitch
-                                        state={state}
-                                        toggleStateBc={toggleState}
-                                        ref={this.baseSwitch}
-                                    />
-                                </div>
-                            ),
+                            render: (_, source) => {
+                                return source ? (
+                                    <div>
+                                        <BaseSwitch
+                                            dataSource={source}
+                                            toggleStateBc={toggleState}
+                                            ref={this.baseSwitch}
+                                        />
+                                    </div>
+                                ) : (
+                                    ''
+                                )
+                            },
                         },
                         {
                             type: 'oprate',
-                            render: () => {
+                            render: (_, { id: storeId }) => {
                                 return (
                                     <div>
                                         <Button
-                                            onClick={() => this.handleShowDetail()}
+                                            onClick={() => this.handleShowDetail(storeId)}
                                             size="small"
                                             type="default"
                                         >
                                             设置管理员
                                         </Button>
                                         <span>&nbsp;</span>
-                                        <Button
-                                            onClick={() => this.deleteItem()}
-                                            size="small"
-                                            type="danger"
+                                        <Popconfirm
+                                            title="确定删除该门店吗?"
+                                            onConfirm={() => this.deleteItem(storeId)}
+                                            okText="确定"
+                                            cancelText="取消"
                                         >
-                                            删除
-                                        </Button>
+                                            <Button size="small" type="danger">
+                                                删除
+                                            </Button>
+                                        </Popconfirm>
                                     </div>
                                 )
                             },
@@ -233,7 +279,16 @@ class StoremanagementIndex extends Component {
                     onCancel={this.handleCancel}
                     footer={null}
                 >
-                    <SetAdmin handleCancel={handleCancel} />
+                    <SetAdmin storeId={activeStoreId} handleCancel={handleCancel} />
+                </Modal>
+                <Modal
+                    title="新增门店"
+                    destroyOnClose
+                    visible={visibleAddStoreModal}
+                    onCancel={this.handleAddStoreCancel}
+                    footer={null}
+                >
+                    <AddStore handleCancel={this.handleAddStoreCancel} />
                 </Modal>
             </PageHeaderWrapper>
         )

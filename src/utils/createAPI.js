@@ -4,7 +4,8 @@ import { Modal } from 'antd'
 import { uuid, createSign, mainSite } from '@/utils/utils'
 import md5 from 'md5'
 
-const baseUrl = '/api'
+// const baseUrl = '/api'
+const baseUrl = '//47.97.180.197:89'
 
 const codeMessage = {
     200: '服务器成功返回请求的数据。',
@@ -41,7 +42,7 @@ const checkStatus = response => {
 
 const instance = axios.create({
     baseURL: baseUrl,
-    withCredentials: true,
+    // withCredentials: true,
     // timeout: 20000,
 })
 

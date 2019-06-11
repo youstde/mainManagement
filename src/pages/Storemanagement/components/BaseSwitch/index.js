@@ -24,14 +24,14 @@ class BaseSwitch extends Component {
     }
 
     handleClick = checked => {
-        const { toggleStateBc } = this.props
+        const { toggleStateBc, dataSource } = this.props
 
         this.setState(
             {
                 isToLoading: true,
             },
             () => {
-                toggleStateBc(checked)
+                toggleStateBc(checked, dataSource.id)
             }
         )
     }
@@ -39,17 +39,17 @@ class BaseSwitch extends Component {
     render() {
         const { isToLoading } = this.state
         const { handleClick } = this
-        const { state } = this.props
-
+        const { dataSource } = this.props
+        console.log('dataSource:', dataSource)
         return (
             <div>
                 <Switch
                     onClick={handleClick}
                     loading={isToLoading}
-                    checked={state === 1}
+                    checked={dataSource.status === 0}
                     checkedChildren="启用"
                     unCheckedChildren="停用"
-                    defaultChecked={state === 1}
+                    defaultChecked={dataSource.status === 0}
                 />
             </div>
         )

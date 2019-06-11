@@ -1,11 +1,10 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'dva'
-import { Form, Input, Select, Button, message } from 'antd'
+import { Form, Input, Button, Select, message } from 'antd'
 
-import { storeBaseGet } from '@/services/common'
+import { storeBaseGet, baseGet } from '@/services/common'
 
 const { Option } = Select
-// const { TextArea } = Input
 
 @connect(() => ({}))
 class EditPerson extends PureComponent {
@@ -36,42 +35,75 @@ class EditPerson extends PureComponent {
         })
     }
 
-    handlesubmit = e => {
-        alert(1)
-        e.preventDefault()
-        const { form } = this.props
-        form.validateFields((err, values) => {
-            if (!err) {
-                console.log('Received values of form: ', values)
-            }
-        })
+    validateToPhone = (rule, value, callback) => {
+        if (value && /^[1]([3-9])[0-9]{9}$/.test(value)) {
+            callback()
+        } else {
+            callback('请输入正确格式的手机号!')
+        }
     }
 
     compareToFirstPassword = (rule, value, callback) => {
         const { form } = this.props
         if (value && value !== form.getFieldValue('password')) {
-            callback('两次输入的密码不一致,请检查密码!')
+            callback('两次输入的密码不一致!')
         } else {
             callback()
         }
+    }
+
+    handleSubmit = e => {
+        e.preventDefault()
+        const { form, cancelModal, members } = this.props
+        form.validateFields((err, values) => {
+            if (!err) {
+                console.log('Received values of form: ', values, members)
+                if (values.type === '2' && !values.mch_id) {
+                    message.warn('请选择所属门店!', 2)
+                    return
+                }
+                const params = {
+                    t: 'member.save',
+                    mobile: values.mobile,
+                    name: values.name,
+                    pwd: values.password,
+                    type: values.type,
+                }
+                if (members) {
+                    params.id = members.id
+                }
+                if (values.mch_id) {
+                    params.mch_id = values.mch_id
+                }
+                baseGet(params).then(res => {
+                    if (res && res.errcode === 0) {
+                        message.success('操作成功!', 2)
+                    }
+                    cancelModal()
+                })
+            }
+        })
     }
 
     render() {
         const {
             form: { getFieldDecorator },
         } = this.props
+        const { handleSubmit } = this
+
         const { storeList, dataSource } = this.state
 
         const formItemLayout = {
             labelCol: {
-                xs: { span: 24 },
-                sm: { span: 8 },
+                xs: { span: 16 },
+                sm: { span: 6 },
             },
             wrapperCol: {
                 xs: { span: 24 },
                 sm: { span: 16 },
             },
         }
+
         const formItemLayoutWithOutLabel = {
             wrapperCol: {
                 xs: { span: 24, offset: 10 },
@@ -92,7 +124,7 @@ class EditPerson extends PureComponent {
 
         return (
             <Fragment>
-                <Form {...formItemLayout} onSubmit={this.handleSubmit}>
+                <Form {...formItemLayout} onSubmit={handleSubmit}>
                     <Form.Item label="成员姓名">
                         {getFieldDecorator('name', {
                             initialValue: dataSource.name || '',
@@ -117,7 +149,7 @@ class EditPerson extends PureComponent {
                     </Form.Item>
                     <Form.Item label="管理员类型">
                         {getFieldDecorator('type', {
-                            initialValue: dataSource.type || '',
+                            initialValue: dataSource.type ? dataSource.type.toString() : '',
                             rules: [
                                 {
                                     required: true,
@@ -136,7 +168,7 @@ class EditPerson extends PureComponent {
                             initialValue: dataSource.mch_id || '',
                             rules: [
                                 {
-                                    required: true,
+                                    required: false,
                                     message: '所属门店不能为空!',
                                 },
                             ],
@@ -154,7 +186,7 @@ class EditPerson extends PureComponent {
                         })(<Input.Password />)}
                     </Form.Item>
                     <Form.Item label="确认密码">
-                        {getFieldDecorator('password', {
+                        {getFieldDecorator('confirmPassword', {
                             initialValue: dataSource.password || '',
                             rules: [
                                 {

@@ -8,7 +8,7 @@ import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
 import PersonnelStateSwitch from './components/stateCheck'
 import ConnectRole from './connectRole'
-import EditPerson from './test'
+import EditPerson from './edit'
 
 import { baseGet } from '@/services/common'
 
@@ -41,7 +41,6 @@ class AuthorityPersonnelList extends Component {
 
         const query = {
             t: 'member.list',
-            type: 1,
             size: pagination.pageSize,
             index: pageNum || pagination.current,
             ...params,
@@ -148,7 +147,7 @@ class AuthorityPersonnelList extends Component {
             })
         } else {
             baseGet({
-                t: 'role.status',
+                t: 'member.status',
                 id: personId,
                 action: 'disable',
             }).then(res => {
@@ -170,15 +169,20 @@ class AuthorityPersonnelList extends Component {
             if (res && res.errcode === 0) {
                 message.success('删除成功')
             }
+            this.fetchData()
         })
     }
 
     handleHideConnectRole = () => {
-        this.setState({
-            showConnectRole: false,
-            activeNumberId: '',
-        })
-        this.fetchData()
+        this.setState(
+            {
+                showConnectRole: false,
+                activeNumberId: '',
+            },
+            () => {
+                this.fetchData()
+            }
+        )
     }
 
     connectRole = numberId => {
@@ -196,11 +200,15 @@ class AuthorityPersonnelList extends Component {
     }
 
     handleHideEditNumber = () => {
-        this.setState({
-            showEditNumber: false,
-            activeMember: {},
-        })
-        this.fetchData()
+        this.setState(
+            {
+                showEditNumber: false,
+                activeMember: {},
+            },
+            () => {
+                this.fetchData()
+            }
+        )
     }
 
     render() {
@@ -251,7 +259,7 @@ class AuthorityPersonnelList extends Component {
                     columns={[
                         {
                             title: '成员账号',
-                            dataIndex: 'mch_name',
+                            render: (_, { mobile }) => <span>{mobile}</span>,
                         },
                         {
                             title: '姓名',
@@ -280,7 +288,6 @@ class AuthorityPersonnelList extends Component {
                         {
                             dataIndex: 'last_time',
                             title: '最后登录',
-                            type: 'date',
                         },
                         {
                             dataIndex: 'status',

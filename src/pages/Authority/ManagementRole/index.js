@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'dva'
-import { message, Modal } from 'antd'
+import { Popconfirm, message, Modal } from 'antd'
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper'
 import BasicTable from '@/components/BasicTable'
@@ -138,6 +138,11 @@ class AuthorityManagementRole extends Component {
 
         return (
             <PageHeaderWrapper>
+                <div style={{ textAlign: 'right', paddingBottom: '10px' }}>
+                    <Button onClick={() => this.handleShowEdit({})} size="small" type="default">
+                        新增角色
+                    </Button>
+                </div>
                 <BasicTable
                     columns={[
                         {
@@ -201,13 +206,16 @@ class AuthorityManagementRole extends Component {
                                             编辑
                                         </Button>
                                         <span>&nbsp;</span>
-                                        <Button
-                                            onClick={() => this.deleteItem(roleData.id)}
-                                            size="small"
-                                            type="danger"
+                                        <Popconfirm
+                                            title="确定删除该角色吗?"
+                                            onConfirm={() => this.deleteItem(roleData.id)}
+                                            okText="确定"
+                                            cancelText="取消"
                                         >
-                                            删除
-                                        </Button>
+                                            <Button size="small" type="danger">
+                                                删除
+                                            </Button>
+                                        </Popconfirm>
                                     </div>
                                 )
                             },

@@ -94,7 +94,7 @@ export default class SiderMenu extends PureComponent {
                     </div> */}
                     {/* TODO: 这里重定向 */}
                     <Link to="/home">
-                        <img src={logo} alt="logo" />
+                        {/* <img src={logo} alt="logo" /> */}
                         <h1>{title}</h1>
                     </Link>
                 </div>
