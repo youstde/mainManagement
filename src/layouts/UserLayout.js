@@ -10,7 +10,7 @@ import getPageTitle from '@/utils/getPageTitle'
 
 const copyright = (
     <Fragment>
-        Copyright <Icon type="copyright" /> 2019 锌财科技
+        Copyright <Icon type="copyright" /> 2019 管理后台
     </Fragment>
 )
 

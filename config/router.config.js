@@ -126,14 +126,49 @@ export default [
                 ],
             },
             {
-                path: '/afterloan',
-                name: '贷后管理',
+                path: '/property',
+                name: '属性管理',
                 icon: 'gateway',
                 routes: [
                     {
-                        path: '/afterloan/repayment',
-                        name: '还款记录管理',
-                        component: './WaitBuild.js',
+                        path: '/property/classmanagement',
+                        name: '品类管理',
+                        component: './Property/Classmanagement',
+                    },
+                    {
+                        path: '/property/sizemanagement',
+                        name: '规格管理',
+                        component: './Property/Sizemanagement',
+                    },
+                    {
+                        path: '/property/outpackagemanagement',
+                        name: '外包装管理',
+                        component: './Property/OutPackagemanagement',
+                    },
+                    {
+                        path: '/property/innerpackagemanagement',
+                        name: '内包装管理',
+                        component: './Property/InnerPackagemanagement',
+                    },
+                    {
+                        path: '/property/brandmanagement',
+                        name: '品牌管理',
+                        component: './Property/Brandmanagement',
+                    },
+                    {
+                        path: '/property/storagemanagement',
+                        name: '存储情况管理',
+                        component: './Property/Storagemanagement',
+                    },
+                    {
+                        path: '/property/processmanagement',
+                        name: '加工情况管理',
+                        component: './Property/Processmanagement',
+                    },
+                    {
+                        path: '/property/cultivarmanagement',
+                        name: '品种管理',
+                        component: './Property/Cultivarmanagement',
                     },
                 ],
             },

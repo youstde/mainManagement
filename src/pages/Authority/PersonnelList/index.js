@@ -56,15 +56,12 @@ class AuthorityPersonnelList extends Component {
         baseGet(query).then(res => {
             if (res && res.errcode === 0) {
                 if (res.data.length) {
-                    const {
-                        data,
-                        pages: { count },
-                    } = res
+                    const { data } = res
                     this.setState({
                         dataSrouce: data,
                         pagination: {
                             ...pagination,
-                            total: count,
+                            total: res.pages ? res.pages.count : 0,
                         },
                     })
                 } else {

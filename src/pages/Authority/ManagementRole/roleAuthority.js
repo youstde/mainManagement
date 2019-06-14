@@ -69,8 +69,9 @@ class RoleAuthority extends PureComponent {
             events: ischeckedValues.join(','),
         }).then(res => {
             if (res && res.errcode === 0) {
-                message.success('操作成功!', 2)
-                this.fetchData()
+                message.success('操作成功!', 2, () => {
+                    window.location.reload()
+                })
             }
         })
     }

@@ -44,3 +44,19 @@
 ### tips
 #### 1.tabel中每行的key的设置，我设置的是数据中的id，这个到时候调接口的时候根据实际情况去调整 荔枝： /purchase/ordermanagement
 
+
+页面部分：
+前端H5界面
+http://h5.fresh.laoniutech.com/
+平台管理后台
+http://admin.fresh.laoniutech.com
+门店PC后台
+http://mch.admin.fresh.laoniutech.com
+
+接口部分
+后台接口地址
+http://admin.api.fresh.laoniutech.com
+
+前台接口地址
+http://api.fresh.laoniutech.com
+

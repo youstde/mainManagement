@@ -46,7 +46,7 @@ class AuthorityManagementRole extends Component {
                     dataSrouce: res.data,
                     pagination: {
                         ...pagination,
-                        total: res.pages.count,
+                        total: res.pages ? res.pages.count : 0,
                     },
                 })
             }

@@ -40,7 +40,6 @@ class ConnectRole extends PureComponent {
     handlesubmit = () => {
         const { numberId, cancelModal } = this.props
         const { ischeckedValues } = this.state
-        console.log('handle:', ischeckedValues)
         baseGet({
             t: 'member.auth',
             id: numberId,
