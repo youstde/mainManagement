@@ -9,7 +9,7 @@ module.exports = {
     menu: {
         disableLocal: true,
     },
-    title: '后台业务管理系统',
+    title: '平台业务管理系统',
     pwa: true,
     // your iconfont Symbol Scrip Url
     // eg：//at.alicdn.com/t/font_1039637_btcrd5co4w.js

@@ -17,10 +17,12 @@ class PurchaseProviderList extends Component {
         showEdit: false,
         dataSrouce: [], // 表格数据
         fields: [],
+        classList: [],
     }
 
     componentDidMount() {
         this.fetchData()
+        this.handleClassData()
     }
 
     // 请求表格的数据
@@ -34,6 +36,20 @@ class PurchaseProviderList extends Component {
                 this.setState({
                     dataSrouce: res.data.values,
                     fields: res.data.fields,
+                })
+            }
+        })
+    }
+
+    handleClassData = () => {
+        const classCid = '29C5FB2722EE750E35'
+        configurationGet({
+            t: 'values',
+            cid: classCid,
+        }).then(res => {
+            if (res && res.errcode === 0) {
+                this.setState({
+                    classList: res.data[classCid],
                 })
             }
         })
@@ -79,7 +95,7 @@ class PurchaseProviderList extends Component {
     }
 
     render() {
-        const { dataSrouce, showEdit, editItem, fields, cid } = this.state
+        const { dataSrouce, showEdit, editItem, fields, cid, classList } = this.state
 
         return (
             <PageHeaderWrapper>
@@ -100,11 +116,18 @@ class PurchaseProviderList extends Component {
                         },
                         {
                             title: '供应品类',
-                            dataIndex: 'category_id',
-                            // render: (_, { category_id }) => {
-                            //     const arr = providerClass.map(item => <p key={item}>{item}</p>)
-                            //     return <div>{arr}</div>
-                            // },
+                            render: (_, { category_id: categoryId }) => {
+                                const providerClassArr = categoryId.split(',')
+                                const arr = providerClassArr.map(item => {
+                                    let label = ''
+                                    // eslint-disable-next-line array-callback-return
+                                    classList.forEach(itemClass => {
+                                        if (itemClass.id === item) label = itemClass.name
+                                    })
+                                    return <p key={item}>{label}</p>
+                                })
+                                return <div>{arr}</div>
+                            },
                         },
                         {
                             title: '供应商地址',
@@ -137,6 +160,7 @@ class PurchaseProviderList extends Component {
                         },
                         {
                             type: 'oprate',
+                            fixed: 'right',
                             render: (_, dataItem) => {
                                 return (
                                     <div style={{ lineHeight: 2 }}>
@@ -163,6 +187,7 @@ class PurchaseProviderList extends Component {
                             },
                         },
                     ]}
+                    scroll={{ x: 1700 }}
                     dataSource={dataSrouce}
                 />
                 <Modal

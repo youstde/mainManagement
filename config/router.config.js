@@ -66,7 +66,7 @@ export default [
             {
                 path: '/goods',
                 name: '商品',
-                icon: 'audit',
+                icon: 'gift',
                 routes: [
                     {
                         path: '/goods/spulist',
@@ -82,46 +82,6 @@ export default [
                         path: '/goods/storegoodslist',
                         name: '门店商品列表',
                         component: './Goods/StoreGoodsList',
-                    },
-                ],
-            },
-            {
-                path: '/purchase',
-                name: '采购管理',
-                icon: 'interation',
-                routes: [
-                    {
-                        path: '/purchase/providerlist',
-                        name: '供应商管理',
-                        temp: true,
-                        component: './Purchase/ProviderList',
-                    },
-                    {
-                        path: '/purchase/ordermanagement',
-                        name: '门店订货订单管理',
-                        temp: true,
-                        component: './Purchase/OrderManagement',
-                    },
-                    {
-                        path: '/purchase/createorder',
-                        name: '通过勾选生成采购单',
-                        hideInMenu: true,
-                        temp: true,
-                        component: './Purchase/OrderManagement/createOrder.js',
-                    },
-                    {
-                        path: '/purchase/manualcreateorder',
-                        name: '手动生成采购单',
-                        hideInMenu: true,
-                        temp: true,
-                        component: './Purchase/OrderManagement/manualCreateOrder.js',
-                    },
-                    {
-                        path: '/purchase/test',
-                        name: '测试',
-                        hideInMenu: true,
-                        temp: true,
-                        component: './Purchase/OrderManagement/test.js',
                     },
                 ],
             },
@@ -173,37 +133,104 @@ export default [
                 ],
             },
             {
-                path: '/finance',
-                name: '财务管理',
+                path: '/purchase',
+                name: '采购管理',
                 icon: 'dollar',
                 routes: [
                     {
-                        path: '/finance/deposit',
-                        name: '保证金管理',
-                        component: './WaitBuild.js',
-                    },
-                    {
-                        path: '/finance/invoice',
-                        name: '发票管理',
+                        path: '/purchase/providerlist',
+                        name: '供应商管理',
                         temp: true,
-                        component: './WaitBuild.js',
+                        component: './Purchase/ProviderList',
                     },
                     {
-                        path: '/finance/reconcile',
-                        name: '对账管理',
+                        path: '/purchase/ordermanagement',
+                        name: '门店订货订单管理',
                         temp: true,
-                        component: './WaitBuild.js',
+                        component: './Purchase/OrderManagement',
                     },
                     {
-                        path: '/finance/receipt',
-                        name: '电子回单管理',
-                        component: './Finance/Receipt',
-                    },
-                    {
-                        path: '/finance/receipt/download',
-                        name: '下载管理',
+                        path: '/purchase/createorder',
+                        name: '通过勾选生成采购单',
                         hideInMenu: true,
-                        component: './Finance/Receipt/Download',
+                        temp: true,
+                        component: './Purchase/OrderManagement/createOrder.js',
+                    },
+                    {
+                        path: '/purchase/manualcreateorder',
+                        name: '手动生成采购单',
+                        hideInMenu: true,
+                        temp: true,
+                        component: './Purchase/OrderManagement/manualCreateOrder.js',
+                    },
+                    {
+                        path: '/purchase/test',
+                        name: '测试',
+                        hideInMenu: true,
+                        temp: true,
+                        component: './Purchase/OrderManagement/test.js',
+                    },
+                    {
+                        path: '/purchase/purchasebill',
+                        name: '采购单管理',
+                        routes: [
+                            {
+                                path: '/purchase/purchasebill/list',
+                                name: '采购单列表',
+                                component: './Purchase/PurchaseBill',
+                            },
+                        ],
+                    },
+                    {
+                        path: '/purchase/dispatchbill',
+                        name: '发货单管理',
+                        routes: [
+                            {
+                                path: '/purchase/dispatchbill/list',
+                                name: '发货单列表',
+                                component: './Purchase/Dispatchbill',
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                path: '/logistics',
+                name: '干线物流管理',
+                icon: 'twitter',
+                routes: [
+                    {
+                        path: '/logistics/companymanagement',
+                        name: '干线物流公司管理',
+                        routes: [
+                            {
+                                path: '/logistics/companymanagement/list',
+                                name: '干线物流公司列表',
+                                component: './Logistics/CompanyManagement',
+                            },
+                        ],
+                    },
+                    {
+                        path: '/logistics/dispatchmanagement',
+                        name: '发货管理',
+                        routes: [
+                            {
+                                path: '/logistics/dispatchmanagement/list',
+                                name: '发货单列表',
+                                component: './Logistics/Dispatchmanagement',
+                            },
+                        ],
+                    },
+                    {
+                        path: '/logistics/logisticsbillmanagement',
+                        name: '物流单管理',
+                        routes: [
+                            {
+                                path: '/logistics/logisticsbillmanagement/list',
+                                name: '物流单列表',
+                                component: './Logistics/LogisticsBillManagement',
+                            },
+                        ],
                     },
                 ],
             },
