@@ -12,6 +12,12 @@ export const storeBaseGet = async (params = {}) =>
         params,
     })
 
+// 配置
+export const configurationGet = async (params = {}) =>
+    createAPI('/configuration', 'get', {
+        params,
+    })
+
 // 获取该用户拥有的所有权限
 export const getAllAuthorities = async () =>
     createAPI('/admin', 'get', {

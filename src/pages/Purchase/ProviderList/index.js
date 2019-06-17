@@ -3,93 +3,40 @@ import { connect } from 'dva'
 import { Modal, Popconfirm, message } from 'antd'
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper'
-import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
 import AddProvider from './addProvider'
 
-// mock
-import ProviderListMock from '../mock/providerlist'
-
-// import { fetchFunction } from '@/services'
-const fetchFunction = async () => ({ data: { list: [], count: 0 }, success: true })
+import { configurationGet } from '@/services/common'
 
 @connect(() => ({}))
 class PurchaseProviderList extends Component {
     state = {
+        cid: 'A2CDF5CDE38BEFEB3E',
         editItem: null,
         showEdit: false,
-        searchCondition: {}, // 搜索条件
-        dataSrouce: ProviderListMock || [], // 表格数据
-        pagination: {
-            current: 1,
-            pageSize: 10,
-            total: 0,
-        }, // 表格分页
+        dataSrouce: [], // 表格数据
+        fields: [],
     }
 
     componentDidMount() {
-        // this.fetchData()
+        this.fetchData()
     }
 
     // 请求表格的数据
-    fetchData = (parmas = {}) => {
-        const { pageNum, ...params } = parmas
-        const { pagination, searchCondition } = this.state
-
-        fetchFunction({
-            pageSize: pagination.pageSize,
-            pageNum: pageNum || pagination.current,
-            ...searchCondition,
-            ...params,
+    fetchData = () => {
+        const { cid } = this.state
+        configurationGet({
+            t: 'list',
+            cid,
         }).then(res => {
-            if (res && res.success) {
+            if (res && res.errcode === 0) {
                 this.setState({
-                    dataSrouce: res.data.list,
-                    pagination: {
-                        ...pagination,
-                        total: res.data.count,
-                    },
+                    dataSrouce: res.data.values,
+                    fields: res.data.fields,
                 })
             }
         })
-    }
-
-    // 查询表单搜索
-    handleFormSearch = values => {
-        const { pagination } = this.state
-
-        this.setState(
-            {
-                searchCondition: values,
-                pagination: {
-                    ...pagination,
-                    current: 1,
-                },
-            },
-            () => {
-                this.fetchData()
-            }
-        )
-    }
-
-    // 切换分页
-    handleChangePage = page => {
-        const { pagination } = this.state
-
-        this.setState(
-            {
-                pagination: {
-                    ...pagination,
-                    current: page,
-                },
-            },
-            () => {
-                this.fetchData({
-                    pageNum: page,
-                })
-            }
-        )
     }
 
     handleHideEdit = () => {
@@ -97,6 +44,7 @@ class PurchaseProviderList extends Component {
             showEdit: false,
             editItem: null,
         })
+        this.fetchData()
     }
 
     editSome = data => {
@@ -115,27 +63,26 @@ class PurchaseProviderList extends Component {
     }
 
     // 删除某个供应商
-    deleteItem = () => {}
+    deleteItem = dataItem => {
+        const { cid } = this.state
+        configurationGet({
+            t: 'status',
+            id: dataItem.id,
+            cid,
+            action: 'delete',
+        }).then(res => {
+            if (res && res.errcode === 0) {
+                message.success('删除成功!', 2)
+                this.fetchData()
+            }
+        })
+    }
 
     render() {
-        const { dataSrouce, pagination, showEdit, editItem } = this.state
-
-        function confirmdelete() {
-            message.success('删除成功')
-        }
+        const { dataSrouce, showEdit, editItem, fields, cid } = this.state
 
         return (
             <PageHeaderWrapper>
-                <SearchForm
-                    data={[
-                        {
-                            label: ' 供应商',
-                            type: 'input',
-                            key: 'providerkey',
-                        },
-                    ]}
-                    buttonGroup={[{ onSearch: this.handleFormSearch }]}
-                />
                 <div style={{ textAlign: 'right', paddingBottom: '10px' }}>
                     <Button onClick={() => this.editSome()} size="small" type="default">
                         新增供应商
@@ -144,44 +91,48 @@ class PurchaseProviderList extends Component {
                 <BasicTable
                     columns={[
                         {
+                            title: '供应商ID',
+                            dataIndex: 'ssid',
+                        },
+                        {
                             title: '供应商名称',
-                            dataIndex: 'providerName',
+                            dataIndex: 'name',
                         },
                         {
                             title: '供应品类',
-                            dataIndex: 'providerClass',
-                            render: (_, { providerClass }) => {
-                                const arr = providerClass.map(item => <p key={item}>{item}</p>)
-                                return <div>{arr}</div>
-                            },
+                            dataIndex: 'category_id',
+                            // render: (_, { category_id }) => {
+                            //     const arr = providerClass.map(item => <p key={item}>{item}</p>)
+                            //     return <div>{arr}</div>
+                            // },
                         },
                         {
                             title: '供应商地址',
-                            dataIndex: 'providerAdress',
+                            dataIndex: 'address',
                             type: 'longText',
                         },
                         {
                             title: '供应商联系人',
-                            dataIndex: 'providerLinkPeople',
+                            dataIndex: 'contacts',
                         },
                         {
-                            dataIndex: 'providerPhone',
+                            dataIndex: 'mobile',
                             title: '供应商联系电话',
                         },
                         {
-                            dataIndex: 'settleTimer',
+                            dataIndex: 'settlement',
                             title: '结算周期',
                         },
                         {
-                            dataIndex: 'bankAccount',
+                            dataIndex: 'bank_name',
                             title: '银行账户',
                         },
                         {
-                            dataIndex: 'bank',
+                            dataIndex: 'bank_info',
                             title: '开户行',
                         },
                         {
-                            dataIndex: 'bankNum',
+                            dataIndex: 'bank_account',
                             title: '银行账号',
                         },
                         {
@@ -199,15 +150,11 @@ class PurchaseProviderList extends Component {
                                         <span>&nbsp;</span>
                                         <Popconfirm
                                             title="确定删除该供应商吗?"
-                                            onConfirm={confirmdelete}
+                                            onConfirm={() => this.deleteItem(dataItem)}
                                             okText="确定"
                                             cancelText="取消"
                                         >
-                                            <Button
-                                                onClick={() => this.deleteItem()}
-                                                size="small"
-                                                type="danger"
-                                            >
+                                            <Button size="small" type="danger">
                                                 删除
                                             </Button>
                                         </Popconfirm>
@@ -217,10 +164,6 @@ class PurchaseProviderList extends Component {
                         },
                     ]}
                     dataSource={dataSrouce}
-                    pagination={{
-                        ...pagination,
-                        onChange: this.handleChangePage,
-                    }}
                 />
                 <Modal
                     title={editItem ? '编辑供应商信息' : '添加供应商'}
@@ -230,7 +173,12 @@ class PurchaseProviderList extends Component {
                     visible={showEdit}
                     onCancel={this.handleHideEdit}
                 >
-                    <AddProvider data={editItem || {}} cancelModal={this.handleHideEdit} />
+                    <AddProvider
+                        data={editItem || {}}
+                        fields={fields}
+                        cid={cid}
+                        cancelModal={this.handleHideEdit}
+                    />
                 </Modal>
             </PageHeaderWrapper>
         )

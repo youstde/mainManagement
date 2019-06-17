@@ -1,8 +1,10 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'dva'
-import { Form, Input, Select, Button } from 'antd'
+import { Form, Input, Select, Button, message } from 'antd'
 
 import { filterFormItemValue } from '@/utils/utils'
+
+import { configurationGet } from '@/services/common'
 
 const { Option } = Select
 
@@ -10,26 +12,7 @@ const { Option } = Select
 
 @connect(() => ({}))
 class AddProvider extends PureComponent {
-    state = {
-        selectArr: [
-            {
-                key: 1,
-                label: '厨具',
-            },
-            {
-                key: 2,
-                label: '家具',
-            },
-            {
-                key: 3,
-                label: 'test3',
-            },
-            {
-                key: 4,
-                label: 'test4',
-            },
-        ],
-    }
+    state = {}
 
     componentDidMount() {
         const { data } = this.props
@@ -40,12 +23,22 @@ class AddProvider extends PureComponent {
     handleSubmit = e => {
         e.preventDefault()
         // ===tip==>通过判断通过props传过来的data中有没有id从而确定是编辑还是新建
-        const { form, cancelModal } = this.props
+        const { form, cancelModal, data, cid } = this.props
         form.validateFieldsAndScroll((err, values) => {
             if (!err) {
                 const newValues = filterFormItemValue(values, ['providerClass'])
                 console.log('Received values of form: ', newValues)
-                cancelModal()
+                configurationGet({
+                    t: 'save',
+                    cid,
+                    id: data.id || 0,
+                    ...newValues,
+                }).then(res => {
+                    if (res && res.errcode === 0) {
+                        message.success('操作成功!', 2)
+                    }
+                    cancelModal()
+                })
             }
         })
     }
@@ -53,20 +46,11 @@ class AddProvider extends PureComponent {
     render() {
         const {
             form: { getFieldDecorator },
-            data: {
-                providerName,
-                providerAdress,
-                providerClass,
-                providerLinkPeople,
-                providerPhone,
-                settleTimer,
-                bankAccount,
-                bank,
-                bankNum,
-            },
+            data,
+            fields,
         } = this.props
 
-        const { selectArr } = this.state
+        const { handleChange } = this
 
         const formItemLayout = {
             labelCol: {
@@ -86,121 +70,65 @@ class AddProvider extends PureComponent {
             },
         }
 
+        function createFormItem() {
+            console.log('data.ssid:', data.ssid)
+            const arr = fields.map(field => {
+                if (field.selects.length) {
+                    return (
+                        <Form.Item label={field.show_name}>
+                            {getFieldDecorator(field.field_name, {
+                                initialValue: data[field.field_name]
+                                    ? data[field.field_name].split(',')
+                                    : null,
+                                rules: [
+                                    {
+                                        required: true,
+                                        message: '此项不能为空!',
+                                    },
+                                ],
+                            })(
+                                <Select
+                                    mode="multiple"
+                                    style={{ width: '100%' }}
+                                    placeholder="请选择(可多选)"
+                                    onChange={handleChange}
+                                >
+                                    {field.selects.map(item => (
+                                        <Option
+                                            value={item.value}
+                                            label={item.text}
+                                            key={item.value}
+                                        >
+                                            {item.text}
+                                        </Option>
+                                    ))}
+                                </Select>
+                            )}
+                        </Form.Item>
+                    )
+                }
+
+                return (
+                    <Form.Item label={field.show_name}>
+                        {getFieldDecorator(field.field_name, {
+                            initialValue: data[field.field_name] || field.default_value,
+                            rules: [
+                                {
+                                    required: true,
+                                    message: '此项不能为空!',
+                                },
+                            ],
+                        })(<Input disabled={data.ssid && field.unmodifiable === 1} />)}
+                    </Form.Item>
+                )
+            })
+            return arr
+        }
+
         return (
             <Fragment>
                 <Form {...formItemLayout} onSubmit={this.handleSubmit}>
-                    <Form.Item label="供应商公司名称">
-                        {getFieldDecorator('providerName', {
-                            initialValue: providerName,
-                            rules: [
-                                {
-                                    required: true,
-                                    message: '供应商名称不能为空!',
-                                },
-                            ],
-                        })(<Input />)}
-                    </Form.Item>
-                    <Form.Item label="供应品类">
-                        {getFieldDecorator('providerClass', {
-                            initialValue: providerClass,
-                            rules: [
-                                {
-                                    required: true,
-                                    message: '供应品类不能为空!',
-                                },
-                            ],
-                        })(
-                            <Select
-                                mode="multiple"
-                                style={{ width: '100%' }}
-                                placeholder="请选择品类(可多选)"
-                                onChange={this.handleChange}
-                            >
-                                {selectArr.map(item => (
-                                    <Option value={item.key} label={item.label} key={item.key}>
-                                        {item.label}
-                                    </Option>
-                                ))}
-                            </Select>
-                        )}
-                    </Form.Item>
-                    <Form.Item label="供应商地址">
-                        {getFieldDecorator('providerAdress', {
-                            initialValue: providerAdress,
-                            rules: [
-                                {
-                                    required: true,
-                                    message: '供应商地址不能为空!',
-                                },
-                            ],
-                        })(<Input />)}
-                    </Form.Item>
-                    <Form.Item label="供应商联系人">
-                        {getFieldDecorator('providerLinkPeople', {
-                            initialValue: providerLinkPeople,
-                            rules: [
-                                {
-                                    required: true,
-                                    message: '供应商联系人不能为空!',
-                                },
-                            ],
-                        })(<Input />)}
-                    </Form.Item>
-                    <Form.Item label="供应商联系电话">
-                        {getFieldDecorator('providerPhone', {
-                            initialValue: providerPhone,
-                            rules: [
-                                {
-                                    required: true,
-                                    message: '供应商联系电话不能为空!',
-                                },
-                            ],
-                        })(<Input />)}
-                    </Form.Item>
-                    <Form.Item label="供应商结算周期">
-                        {getFieldDecorator('settleTimer', {
-                            initialValue: settleTimer,
-                            rules: [
-                                {
-                                    required: true,
-                                    message: '供应商结算周期不能为空!',
-                                },
-                            ],
-                        })(<Input />)}
-                    </Form.Item>
-                    <Form.Item label="供应商银行账户">
-                        {getFieldDecorator('bankAccount', {
-                            initialValue: bankAccount,
-                            rules: [
-                                {
-                                    required: true,
-                                    message: '供应商银行账户不能为空!',
-                                },
-                            ],
-                        })(<Input />)}
-                    </Form.Item>
-                    <Form.Item label="供应商开户行">
-                        {getFieldDecorator('bank', {
-                            initialValue: bank,
-                            rules: [
-                                {
-                                    required: true,
-                                    message: '供应商开户行不能为空!',
-                                },
-                            ],
-                        })(<Input />)}
-                    </Form.Item>
-                    <Form.Item label="银行账号">
-                        {getFieldDecorator('bankNum', {
-                            initialValue: bankNum,
-                            rules: [
-                                {
-                                    required: true,
-                                    message: '银行账号不能为空!',
-                                },
-                            ],
-                        })(<Input type="number" />)}
-                    </Form.Item>
+                    {createFormItem()}
                     <Form.Item {...formItemLayoutWithOutLabel}>
                         <Button type="primary" htmlType="submit">
                             确定

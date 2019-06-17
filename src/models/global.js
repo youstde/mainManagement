@@ -29,6 +29,23 @@ export default {
                 authorities: payload,
             }
         },
+        fetchingStart(state) {
+            return {
+                ...state,
+                fetching: state.fetching + 1,
+            }
+        },
+        fetchingEnd(state) {
+            let count = state.fetching - 1
+            if (count < 0) {
+                count = 0
+            }
+
+            return {
+                ...state,
+                fetching: count,
+            }
+        },
     },
 
     subscriptions: {

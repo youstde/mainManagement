@@ -3,69 +3,32 @@ import { connect } from 'dva'
 import { Modal, message } from 'antd'
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper'
-import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
 import EditItem from './edit'
 
-// mock
-import MockData from '../mock/classmanagement'
-
-// import { fetchFunction } from '@/services'
-const fetchFunction = async () => ({ data: { list: [], count: 0 }, success: true })
+import { configurationGet } from '@/services/common'
 
 @connect(() => ({}))
 class PropertyClassManagement extends Component {
     state = {
+        activeItem: {},
+        cid: '',
+        pageConfig: {},
+        fields: [],
         modelTitle: '编辑',
         visibleModal: false,
         searchCondition: {}, // 搜索条件
-        dataSrouce: MockData || [], // 表格数据
-        pagination: {
-            current: 1,
-            pageSize: 10,
-            total: 0,
-        }, // 表格分页
+        dataSrouce: [], // 表格数据
     }
 
     componentDidMount() {
-        // this.fetchData()
-    }
-
-    // 请求表格的数据
-    fetchData = (parmas = {}) => {
-        const { pageNum, ...params } = parmas
-        const { pagination, searchCondition } = this.state
-
-        fetchFunction({
-            pageSize: pagination.pageSize,
-            pageNum: pageNum || pagination.current,
-            ...searchCondition,
-            ...params,
-        }).then(res => {
-            if (res && res.success) {
-                this.setState({
-                    dataSrouce: res.data.list,
-                    pagination: {
-                        ...pagination,
-                        total: res.data.count,
-                    },
-                })
-            }
-        })
-    }
-
-    // 查询表单搜索
-    handleFormSearch = values => {
-        const { pagination } = this.state
-
+        const {
+            match: { path },
+        } = this.props
         this.setState(
             {
-                searchCondition: values,
-                pagination: {
-                    ...pagination,
-                    current: 1,
-                },
+                cid: path.split('/')[3],
             },
             () => {
                 this.fetchData()
@@ -73,35 +36,48 @@ class PropertyClassManagement extends Component {
         )
     }
 
-    // 切换分页
-    handleChangePage = page => {
-        const { pagination } = this.state
+    // 请求表格的数据
+    fetchData = () => {
+        const { cid } = this.state
 
+        configurationGet({
+            t: 'list',
+            cid,
+            // ...searchCondition
+        }).then(res => {
+            if (res && res.errcode === 0) {
+                this.setState({
+                    dataSrouce: res.data.values,
+                    fields: res.data.fields,
+                    pageConfig: res.data.config,
+                })
+            }
+        })
+    }
+
+    // 查询表单搜索
+    handleFormSearch = values => {
         this.setState(
             {
-                pagination: {
-                    ...pagination,
-                    current: page,
-                },
+                searchCondition: values,
             },
             () => {
-                this.fetchData({
-                    pageNum: page,
-                })
+                this.fetchData()
             }
         )
     }
 
-    handleShowEdit = id => {
-        if (id) {
+    handleShowEdit = item => {
+        if (item) {
             this.setState({
+                activeItem: item,
                 visibleModal: true,
                 modelTitle: '编辑',
             })
         } else {
             this.setState({
                 visibleModal: true,
-                modelTitle: '新增品类',
+                modelTitle: '新增',
             })
         }
     }
@@ -109,15 +85,50 @@ class PropertyClassManagement extends Component {
     handleCancel = () => {
         this.setState({
             visibleModal: false,
+            activeItem: {},
         })
+        this.fetchData()
     }
 
     render() {
-        const { dataSrouce, pagination, visibleModal, modelTitle } = this.state
+        const { dataSrouce, visibleModal, modelTitle, activeItem, fields, pageConfig } = this.state
+
+        const stabelColumns = [
+            {
+                title: '添加日期',
+                dataIndex: 'last_time',
+            },
+            {
+                type: 'oprate',
+                render: (_, item) => {
+                    return (
+                        <div>
+                            <Button
+                                onClick={() => this.handleShowEdit(item)}
+                                size="small"
+                                type="default"
+                            >
+                                编辑
+                            </Button>
+                        </div>
+                    )
+                },
+            },
+        ]
+
+        function createColumns() {
+            const newArr = fields.map(item => {
+                return {
+                    title: item.show_name,
+                    dataIndex: item.field_name,
+                }
+            })
+            return [...newArr, ...stabelColumns]
+        }
 
         return (
             <PageHeaderWrapper>
-                <SearchForm
+                {/* <SearchForm
                     data={[
                         {
                             label: '品类名称',
@@ -126,49 +137,13 @@ class PropertyClassManagement extends Component {
                         },
                     ]}
                     buttonGroup={[{ onSearch: this.handleFormSearch }]}
-                />
+                /> */}
                 <div style={{ textAlign: 'right', paddingBottom: '10px' }}>
                     <Button onClick={() => this.handleShowEdit()} size="small" type="default">
-                        新增品类
+                        新增
                     </Button>
                 </div>
-                <BasicTable
-                    columns={[
-                        {
-                            title: '品类id',
-                            dataIndex: 'id',
-                        },
-                        {
-                            title: '品类名称',
-                            dataIndex: 'name',
-                        },
-                        {
-                            title: '添加日期',
-                            dataIndex: 'date',
-                        },
-                        {
-                            type: 'oprate',
-                            render: (_, { id }) => {
-                                return (
-                                    <div>
-                                        <Button
-                                            onClick={() => this.handleShowEdit(id)}
-                                            size="small"
-                                            type="default"
-                                        >
-                                            编辑
-                                        </Button>
-                                    </div>
-                                )
-                            },
-                        },
-                    ]}
-                    dataSource={dataSrouce}
-                    pagination={{
-                        ...pagination,
-                        onChange: this.handleChangePage,
-                    }}
-                />
+                <BasicTable columns={createColumns()} dataSource={dataSrouce} />
                 <Modal
                     title={modelTitle}
                     destroyOnClose
@@ -176,7 +151,12 @@ class PropertyClassManagement extends Component {
                     onCancel={this.handleCancel}
                     footer={null}
                 >
-                    <EditItem cancelBc={this.handleCancel} />
+                    <EditItem
+                        item={activeItem}
+                        fields={fields}
+                        pageConfig={pageConfig}
+                        cancelBc={this.handleCancel}
+                    />
                 </Modal>
             </PageHeaderWrapper>
         )

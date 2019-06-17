@@ -5,7 +5,28 @@ import { uuid, createSign, mainSite } from '@/utils/utils'
 import md5 from 'md5'
 
 // const baseUrl = '/api'
-const baseUrl = '//47.97.180.197:89'
+const baseUrl = '//admin.api.fresh.laoniutech.com'
+
+const loading = {
+    show() {
+        // eslint-disable-next-line no-underscore-dangle
+        if (window.g_app && window.g_app._store) {
+            // eslint-disable-next-line no-underscore-dangle
+            window.g_app._store.dispatch({
+                type: 'global/fetchingStart',
+            })
+        }
+    },
+    hide() {
+        // eslint-disable-next-line no-underscore-dangle
+        if (window.g_app && window.g_app._store) {
+            // eslint-disable-next-line no-underscore-dangle
+            window.g_app._store.dispatch({
+                type: 'global/fetchingEnd',
+            })
+        }
+    },
+}
 
 const codeMessage = {
     200: '服务器成功返回请求的数据。',
@@ -46,6 +67,18 @@ const instance = axios.create({
     // timeout: 20000,
 })
 
+// 请求拦截器
+instance.interceptors.request.use(
+    config => {
+        loading.show()
+        return config
+    },
+    error => {
+        loading.hide()
+        Promise.reject(error)
+    }
+)
+
 // 响应拦截器
 instance.interceptors.response.use(
     res => {
@@ -60,6 +93,7 @@ instance.interceptors.response.use(
                     window.location = `${mainSite()}user/login`
                 },
             })
+            loading.hide()
             return data
         }
         if (data.errcode !== 0) {
@@ -67,6 +101,7 @@ instance.interceptors.response.use(
                 title: data.msg || data.message,
             })
         }
+        loading.hide()
         return data
     },
     error => {
@@ -81,6 +116,7 @@ instance.interceptors.response.use(
                 content: error.toString(),
             })
         }
+        loading.hide()
         Promise.reject(error)
     }
 )
