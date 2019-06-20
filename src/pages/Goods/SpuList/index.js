@@ -7,16 +7,17 @@ import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
 import GoodsSpuEdit from './edit'
+import Detail from './detail'
+
+import { goodsBaseGet } from '@/services/common'
 
 // mock
 import spuListMock from '../mock/spulist'
 
-// import { fetchFunction } from '@/services'
-const fetchFunction = async () => ({ data: { list: [], count: 0 }, success: true })
-
 @connect(() => ({}))
 class GoodsSpuList extends Component {
     state = {
+        activeId: '',
         showDetail: false,
         showEdit: false,
         searchCondition: {}, // 搜索条件
@@ -29,26 +30,27 @@ class GoodsSpuList extends Component {
     }
 
     componentDidMount() {
-        // this.fetchData()
+        this.fetchData()
     }
 
     // 请求表格的数据
-    fetchData = (parmas = {}) => {
-        const { pageNum, ...params } = parmas
+    fetchData = () => {
         const { pagination, searchCondition } = this.state
-
-        fetchFunction({
-            pageSize: pagination.pageSize,
-            pageNum: pageNum || pagination.current,
-            ...searchCondition,
-            ...params,
-        }).then(res => {
-            if (res && res.success) {
+        const options = {
+            t: 'spu.list',
+            size: pagination.pageSize,
+            index: pagination.current,
+        }
+        if (searchCondition.q) {
+            options.q = searchCondition.q
+        }
+        goodsBaseGet(options).then(res => {
+            if (res && res.errcode === 0) {
                 this.setState({
-                    dataSrouce: res.data.list,
+                    dataSrouce: res.data,
                     pagination: {
                         ...pagination,
-                        total: res.data.count,
+                        total: res.pages.count,
                     },
                 })
             }
@@ -95,32 +97,36 @@ class GoodsSpuList extends Component {
         )
     }
 
-    handleShowDetail = () => {
+    handleShowDetail = id => {
         this.setState({
             showDetail: true,
+            activeId: id,
         })
     }
 
     handleHideDetail = () => {
         this.setState({
             showDetail: false,
+            activeId: '',
         })
     }
 
     handleHideEdit = () => {
         this.setState({
             showEdit: false,
+            activeId: '',
         })
     }
 
-    editSome = () => {
+    editSome = id => {
         this.setState({
             showEdit: true,
+            activeId: id,
         })
     }
 
     render() {
-        const { dataSrouce, pagination, showEdit, showDetail } = this.state
+        const { dataSrouce, pagination, showEdit, showDetail, activeId } = this.state
 
         return (
             <PageHeaderWrapper>
@@ -129,7 +135,7 @@ class GoodsSpuList extends Component {
                         {
                             label: '输入名称/编号',
                             type: 'input',
-                            key: 'searchKey',
+                            key: 'q',
                         },
                     ]}
                     buttonGroup={[{ onSearch: this.handleFormSearch }]}
@@ -138,44 +144,52 @@ class GoodsSpuList extends Component {
                     columns={[
                         {
                             title: 'spuId',
-                            dataIndex: 'spuId',
+                            dataIndex: 'spuid',
                         },
                         {
                             title: '商品图片',
                             dataIndex: 'goodsImg',
+                            render: (_, { pictures }) => {
+                                const imgArr =
+                                    pictures &&
+                                    pictures.map((item, i) => {
+                                        return <img src={item.url} alt="" key={i} />
+                                    })
+                                return imgArr
+                            },
                         },
                         {
                             title: 'spu品名',
-                            dataIndex: 'spuName',
+                            dataIndex: 'name',
                             type: 'longText',
                         },
                         {
                             title: '品类',
-                            dataIndex: 'goodsClass',
+                            dataIndex: 'category_name',
                         },
                         {
-                            dataIndex: 'goodsType',
+                            dataIndex: 'variety_name',
                             title: '品种',
                         },
                         {
-                            dataIndex: 'area',
+                            dataIndex: 'region_name',
                             title: '产区',
                         },
                         {
-                            dataIndex: 'storecase',
+                            dataIndex: 'storage_name',
                             title: '存储情况',
                         },
                         {
-                            dataIndex: 'processcase',
+                            dataIndex: 'process_name',
                             title: '加工情况',
                         },
                         {
                             type: 'oprate',
-                            render: () => {
+                            render: (_, { spuid: itemId }) => {
                                 return (
                                     <div>
                                         <Button
-                                            onClick={() => this.editSome()}
+                                            onClick={() => this.editSome(itemId)}
                                             size="small"
                                             type="default"
                                         >
@@ -183,7 +197,7 @@ class GoodsSpuList extends Component {
                                         </Button>
                                         <span>&nbsp;</span>
                                         <Button
-                                            onClick={() => this.handleShowDetail()}
+                                            onClick={() => this.handleShowDetail(itemId)}
                                             size="small"
                                             type="default"
                                         >
@@ -208,7 +222,7 @@ class GoodsSpuList extends Component {
                     visible={showEdit}
                     onCancel={this.handleHideEdit}
                 >
-                    <GoodsSpuEdit />
+                    <GoodsSpuEdit activeId={activeId} />
                 </Modal>
                 <Modal
                     title="spu信息"
@@ -218,7 +232,7 @@ class GoodsSpuList extends Component {
                     visible={showDetail}
                     onCancel={this.handleHideDetail}
                 >
-                    <GoodsSpuEdit />
+                    <Detail activeId={activeId} />
                 </Modal>
             </PageHeaderWrapper>
         )

@@ -18,6 +18,18 @@ export const configurationGet = async (params = {}) =>
         params,
     })
 
+// 通用
+export const generalGet = async (params = {}) =>
+    createAPI('/general', 'get', {
+        params,
+    })
+
+// 门店get请求的基础
+export const goodsBaseGet = async (params = {}) =>
+    createAPI('/goods', 'get', {
+        params,
+    })
+
 // 获取该用户拥有的所有权限
 export const getAllAuthorities = async () =>
     createAPI('/admin', 'get', {

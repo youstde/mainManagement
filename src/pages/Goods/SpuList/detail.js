@@ -68,6 +68,7 @@ class SpuListDetail extends PureComponent {
 
     render() {
         const { detail, previewVisible, previewImage, fileList } = this.state
+        const { dataSource } = this.props
 
         return (
             <Fragment>
@@ -75,27 +76,27 @@ class SpuListDetail extends PureComponent {
                     data={[
                         {
                             label: 'spu品名',
-                            value: detail.spuName,
+                            value: dataSource.name,
                         },
                         {
                             label: ' 品类',
-                            value: detail.goodsClass,
+                            value: dataSource.category_name,
                         },
                         {
                             label: '品种',
-                            value: detail.goodsType,
+                            value: dataSource.variety_name,
                         },
                         {
                             label: '产区',
-                            value: detail.area,
+                            value: dataSource.region_name,
                         },
                         {
                             label: '存储情况',
-                            value: detail.storecase,
+                            value: dataSource.storage_name,
                         },
                         {
                             label: '加工情况',
-                            value: detail.processcase,
+                            value: dataSource.process_name,
                         },
                     ]}
                 />
