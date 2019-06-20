@@ -1,5 +1,7 @@
-import React, { PureComponent, Fragment } from 'react'
+import React, { PureComponent } from 'react'
 import { Upload, Icon, Modal } from 'antd'
+
+import { generalPost } from '@/services/common'
 
 function getBase64(file) {
     return new Promise((resolve, reject) => {
@@ -12,6 +14,7 @@ function getBase64(file) {
 
 class PicturesWall extends PureComponent {
     state = {
+        fileLists: [],
         previewVisible: false,
         previewImage: '',
         fileList: [
@@ -39,8 +42,33 @@ class PicturesWall extends PureComponent {
 
     handleChange = ({ fileList }) => this.setState({ fileList })
 
+    handleSubmit = file => {
+        const { fileLists } = this.state
+        const formData = new FormData()
+        formData.append('files[]', file)
+        generalPost(
+            {
+                t: 'upload',
+                type: 'goods',
+            },
+            formData
+        ).then(res => {
+            if (res && res.errcode === 0) {
+                this.setState({
+                    fileLists: [
+                        ...fileLists,
+                        {
+                            url: res.data.path,
+                            uid: res.request_id,
+                        },
+                    ],
+                })
+            }
+        })
+    }
+
     render() {
-        const { previewVisible, previewImage, fileList } = this.state
+        const { previewVisible, previewImage, fileLists } = this.state
         const uploadButton = (
             <div>
                 <Icon type="plus" />
@@ -50,13 +78,16 @@ class PicturesWall extends PureComponent {
         return (
             <div className="clearfix">
                 <Upload
-                    action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                    action={file => {
+                        this.handleSubmit(file)
+                    }}
                     listType="picture-card"
-                    fileList={fileList}
+                    fileList={fileLists}
                     onPreview={this.handlePreview}
                     onChange={this.handleChange}
                 >
-                    {fileList.length >= 3 ? null : uploadButton}
+                    {/* {fileList.length >= 3 ? null : uploadButton} */}
+                    {uploadButton}
                 </Upload>
                 <Modal visible={previewVisible} footer={null} onCancel={this.handleCancel}>
                     <img alt="example" style={{ width: '100%' }} src={previewImage} />

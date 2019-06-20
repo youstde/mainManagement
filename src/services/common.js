@@ -24,6 +24,13 @@ export const generalGet = async (params = {}) =>
         params,
     })
 
+// 通用
+export const generalPost = async (params = {}, formData) =>
+    createAPI('/general', 'post', {
+        params,
+        data: formData,
+    })
+
 // 门店get请求的基础
 export const goodsBaseGet = async (params = {}) =>
     createAPI('/goods', 'get', {

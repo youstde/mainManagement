@@ -64,6 +64,11 @@ const checkStatus = response => {
 const instance = axios.create({
     baseURL: baseUrl,
     // withCredentials: true,
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        // "Content-Type": "multipart/form-data",
+        Accept: 'application/json',
+    },
     // timeout: 20000,
 })
 
