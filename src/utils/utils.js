@@ -35,11 +35,15 @@ export function uuid() {
     return uuidStr
 }
 
-export function createSign(arr) {
-    arr = arr.sort()
+export function createSign(params) {
+    let paramsArr = Object.keys(params).map(key => {
+        return params[key]
+    })
+    paramsArr = paramsArr.sort()
+
     let singStr = ''
     // eslint-disable-next-line array-callback-return
-    arr.some(item => {
+    paramsArr.some(item => {
         singStr = `${singStr}${item}@`
     })
     singStr += 'fresh'

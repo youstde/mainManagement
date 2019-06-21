@@ -37,6 +37,13 @@ export const goodsBaseGet = async (params = {}) =>
         params,
     })
 
+// 门店post请求的基础
+export const goodsPost = async (params = {}, formData) =>
+    createAPI('/goods', 'post', {
+        params,
+        data: formData,
+    })
+
 // 获取该用户拥有的所有权限
 export const getAllAuthorities = async () =>
     createAPI('/admin', 'get', {

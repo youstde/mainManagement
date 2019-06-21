@@ -128,27 +128,26 @@ instance.interceptors.response.use(
 
 const createAPI = (url, method, config) => {
     const { params } = config
-    const uuId = localStorage.getItem('uuId')
-    if (uuId) {
-        params.sk = uuId
-    } else {
-        params.sk = uuid()
-        localStorage.setItem('uuId', params.sk)
+    if (typeof params === 'object') {
+        const uuId = localStorage.getItem('uuId')
+        if (uuId) {
+            params.sk = uuId
+        } else {
+            params.sk = uuid()
+            localStorage.setItem('uuId', params.sk)
+        }
+        const userInfoStr = localStorage.getItem('user_info')
+        let localUk = ''
+        if (userInfoStr) {
+            const userInfo = JSON.parse(userInfoStr)
+            localUk = userInfo.uk
+        }
+        params.uk = localUk
+        params.ver = '1.0.0'
+        params.ts = Date.parse(new Date().toUTCString()) / 1000
+        params.sign = md5(createSign(params))
+        config.params = params
     }
-    const userInfoStr = localStorage.getItem('user_info')
-    let localUk = ''
-    if (userInfoStr) {
-        const userInfo = JSON.parse(userInfoStr)
-        localUk = userInfo.uk
-    }
-    params.uk = localUk
-    params.ver = '1.0.0'
-    params.ts = Date.parse(new Date().toUTCString()) / 1000
-    const paramsArr = Object.keys(params).map(key => {
-        return params[key]
-    })
-    params.sign = md5(createSign(paramsArr))
-    config.params = params
 
     return instance({
         url,

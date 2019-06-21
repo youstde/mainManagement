@@ -1,6 +1,9 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'dva'
-import { Form, Input, Select, Cascader, message } from 'antd'
+import { Form, Input, Select, Cascader, message, Button } from 'antd'
+
+import { createSign } from '@/utils/utils'
+import md5 from 'md5'
 
 import UploadImg from './components/UploadImg'
 // 引入编辑器组件
@@ -10,7 +13,7 @@ import 'braft-editor/dist/index.css'
 
 // import Button from '@/components/Button'
 
-import { configurationGet, goodsBaseGet, generalGet } from '@/services/common'
+import { configurationGet, goodsBaseGet, generalGet, goodsPost } from '@/services/common'
 
 const { Option } = Select
 
@@ -187,6 +190,72 @@ class SpuListEdit extends PureComponent {
         })
     }
 
+    handleUploadImg = lists => {
+        console.log('list:', lists)
+        const { form } = this.props
+        form.setFieldsValue({ pictures: lists })
+    }
+
+    handleEditorChange = editorState => {
+        this.setState({ editorState })
+    }
+
+    handleSubmit = e => {
+        e.preventDefault()
+        const { form } = this.props
+        const { editorState, activeId } = this.state
+        const htmlContent = editorState.toHTML()
+        form.validateFieldsAndScroll((err, values) => {
+            if (!err) {
+                const params = {
+                    t: 'spu.save',
+                    spuid: activeId,
+                    describe: htmlContent,
+                }
+                Object.keys(values).forEach(key => {
+                    if (key === 'region_arr') {
+                        // eslint-disable-next-line prefer-destructuring
+                        params.region_id = values[key][2]
+                        return
+                    }
+                    if (key === 'pictures') {
+                        params.pictures = JSON.stringify(values[key])
+                        return
+                    }
+                    params[key] = values[key]
+                })
+                const newOptions = this.createSignOptions(params)
+                const formData = new FormData()
+                Object.keys(newOptions).forEach(key => {
+                    formData.append(key, newOptions[key])
+                })
+                console.log('Received values of form: ', values, htmlContent)
+                goodsPost('', formData).then(res => {
+                    console.log(res)
+                })
+            }
+        })
+    }
+
+    createSignOptions = params => {
+        const uuId = localStorage.getItem('uuId')
+        if (uuId) {
+            params.sk = uuId
+        }
+        const userInfoStr = localStorage.getItem('user_info')
+        let localUk = ''
+        if (userInfoStr) {
+            const userInfo = JSON.parse(userInfoStr)
+            localUk = userInfo.uk
+        }
+        params.uk = localUk
+        params.ver = '1.0.0'
+        params.ts = Date.parse(new Date().toUTCString()) / 1000
+
+        params.sign = md5(createSign(params))
+        return params
+    }
+
     render() {
         const {
             form: { getFieldDecorator },
@@ -204,11 +273,18 @@ class SpuListEdit extends PureComponent {
         const formItemLayout = {
             labelCol: {
                 xs: { span: 24 },
-                sm: { span: 8 },
+                sm: { span: 6 },
             },
             wrapperCol: {
                 xs: { span: 24 },
-                sm: { span: 16 },
+                sm: { span: 14 },
+            },
+        }
+
+        const formItemLayoutWithOutLabel = {
+            wrapperCol: {
+                xs: { span: 24, offset: 10 },
+                sm: { span: 20, offset: 10 },
             },
         }
 
@@ -267,6 +343,10 @@ class SpuListEdit extends PureComponent {
                             </Select>
                         )}
                     </Form.Item>
+                    <div style={{ textAlign: 'center' }}>
+                        默认产区：{dataSource.region_lv1}/{dataSource.region_lv2}/
+                        {dataSource.region_lv3}（编辑时请重新手动选择）
+                    </div>
                     <Form.Item label="产区">
                         {getFieldDecorator('region_arr', {
                             rules: [
@@ -316,20 +396,33 @@ class SpuListEdit extends PureComponent {
                     </Form.Item>
                     <Form.Item label="图片">
                         {getFieldDecorator('pictures', {
+                            initialValue: dataSource.pictures,
                             rules: [
                                 {
                                     required: true,
                                     message: 'Please input your E-mail!',
                                 },
                             ],
-                        })(<UploadImg />)}
+                        })(
+                            <UploadImg
+                                initPictures={dataSource.pictures}
+                                changeBc={this.handleUploadImg}
+                            />
+                        )}
+                    </Form.Item>
+                    <div style={{ border: '1px solid #f1f1f1', marginBottom: '30px' }}>
+                        <BraftEditor
+                            value={editorState}
+                            onChange={this.handleEditorChange}
+                            onSave={this.submitContent}
+                        />
+                    </div>
+                    <Form.Item {...formItemLayoutWithOutLabel}>
+                        <Button type="primary" htmlType="submit">
+                            生成商品SPU
+                        </Button>
                     </Form.Item>
                 </Form>
-                <BraftEditor
-                    value={editorState}
-                    onChange={this.handleEditorChange}
-                    onSave={this.submitContent}
-                />
             </Fragment>
         )
     }
