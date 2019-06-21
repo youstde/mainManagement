@@ -74,6 +74,12 @@ export default [
                         component: './Goods/SpuList',
                     },
                     {
+                        path: '/goods/spuedit',
+                        name: '编辑',
+                        hideInMenu: true,
+                        component: './Goods/SpuList/edit',
+                    },
+                    {
                         path: '/goods/skulist',
                         name: 'sku列表',
                         component: './Goods/SkuList',

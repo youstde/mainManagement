@@ -6,7 +6,6 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper'
 import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
-import GoodsSpuEdit from './edit'
 import Detail from './detail'
 
 import { goodsBaseGet } from '@/services/common'
@@ -111,18 +110,9 @@ class GoodsSpuList extends Component {
         })
     }
 
-    handleHideEdit = () => {
-        this.setState({
-            showEdit: false,
-            activeId: '',
-        })
-    }
-
     editSome = id => {
-        this.setState({
-            showEdit: true,
-            activeId: id,
-        })
+        const { history } = this.props
+        history.push(`/goods/spuedit?id=${id}`)
     }
 
     render() {
@@ -214,16 +204,6 @@ class GoodsSpuList extends Component {
                         onChange: this.handleChangePage,
                     }}
                 />
-                <Modal
-                    title="编辑spu信息"
-                    footer={null}
-                    width={680}
-                    destroyOnClose
-                    visible={showEdit}
-                    onCancel={this.handleHideEdit}
-                >
-                    <GoodsSpuEdit activeId={activeId} />
-                </Modal>
                 <Modal
                     title="spu信息"
                     footer={null}

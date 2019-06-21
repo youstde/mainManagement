@@ -1,23 +1,18 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'dva'
-import { Form, Input, Select, Cascader, message, Upload, Icon, Modal } from 'antd'
+import { Form, Input, Select, Cascader, message } from 'antd'
 
 import UploadImg from './components/UploadImg'
+// 引入编辑器组件
+import BraftEditor from 'braft-editor'
+// 引入编辑器样式
+import 'braft-editor/dist/index.css'
 
 // import Button from '@/components/Button'
 
 import { configurationGet, goodsBaseGet, generalGet } from '@/services/common'
 
 const { Option } = Select
-
-function getBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.readAsDataURL(file)
-        reader.onload = () => resolve(reader.result)
-        reader.onerror = error => reject(error)
-    })
-}
 
 @connect(() => ({}))
 class SpuListEdit extends PureComponent {
@@ -34,25 +29,39 @@ class SpuListEdit extends PureComponent {
         dataSource: {},
         CascaderOptions: [],
         areaIdArr: [],
+        activeId: '',
+        editorState: BraftEditor.createEditorState(null),
     }
 
     componentDidMount() {
-        // 获取详情数据
-        this.fetchData()
-        // 获取品类
-        this.fetchClassData()
-        // 获取品种
-        this.fetchVarietyData()
-        // 获取存储情况
-        this.fetchStorageData()
-        // 获取加工情况
-        this.fetchProcessData()
-        // 获取地区
-        this.fetchAreaData()
+        console.log(this.props)
+        const {
+            location: { query },
+        } = this.props
+        const activeId = query.id
+        this.setState(
+            {
+                activeId,
+            },
+            () => {
+                // 获取详情数据
+                this.fetchData()
+                // 获取品类
+                this.fetchClassData()
+                // 获取品种
+                this.fetchVarietyData()
+                // 获取存储情况
+                this.fetchStorageData()
+                // 获取加工情况
+                this.fetchProcessData()
+                // 获取地区
+                this.fetchAreaData()
+            }
+        )
     }
 
     fetchData = () => {
-        const { activeId } = this.props
+        const { activeId } = this.state
         goodsBaseGet({
             t: 'spu.info',
             spuid: activeId,
@@ -60,6 +69,7 @@ class SpuListEdit extends PureComponent {
             if (res && res.errcode === 0) {
                 this.setState({
                     dataSource: res.data,
+                    editorState: BraftEditor.createEditorState(res.data.describe),
                 })
             }
         })
@@ -188,6 +198,7 @@ class SpuListEdit extends PureComponent {
             storageData,
             processData,
             CascaderOptions,
+            editorState,
         } = this.state
 
         const formItemLayout = {
@@ -314,6 +325,11 @@ class SpuListEdit extends PureComponent {
                         })(<UploadImg />)}
                     </Form.Item>
                 </Form>
+                <BraftEditor
+                    value={editorState}
+                    onChange={this.handleEditorChange}
+                    onSave={this.submitContent}
+                />
             </Fragment>
         )
     }
