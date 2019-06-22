@@ -143,7 +143,14 @@ class GoodsSpuList extends Component {
                                 const imgArr =
                                     pictures &&
                                     pictures.map((item, i) => {
-                                        return <img src={item.url} alt="" key={i} />
+                                        return (
+                                            <img
+                                                style={{ width: '50px', height: '50px' }}
+                                                src={item.url}
+                                                alt=""
+                                                key={i}
+                                            />
+                                        )
                                     })
                                 return imgArr
                             },

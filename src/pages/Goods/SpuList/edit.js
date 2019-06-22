@@ -231,7 +231,10 @@ class SpuListEdit extends PureComponent {
                 })
                 console.log('Received values of form: ', values, htmlContent)
                 goodsPost('', formData).then(res => {
-                    console.log(res)
+                    if (res && res.errcode === 0) {
+                        message.success('操作成功!', 2)
+                        this.fetchData()
+                    }
                 })
             }
         })
@@ -254,6 +257,11 @@ class SpuListEdit extends PureComponent {
 
         params.sign = md5(createSign(params))
         return params
+    }
+
+    handleGoBack = () => {
+        const { history } = this.props
+        history.goBack()
     }
 
     render() {
@@ -420,6 +428,10 @@ class SpuListEdit extends PureComponent {
                     <Form.Item {...formItemLayoutWithOutLabel}>
                         <Button type="primary" htmlType="submit">
                             生成商品SPU
+                        </Button>
+                        &nbsp;
+                        <Button onClick={this.handleGoBack} type="primary">
+                            返回
                         </Button>
                     </Form.Item>
                 </Form>
