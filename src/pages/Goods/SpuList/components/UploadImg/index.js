@@ -25,11 +25,18 @@ class PicturesWall extends PureComponent {
 
     componentDidMount() {
         const { initPictures } = this.props
+        const { fileLists } = this.state
         console.log('initPictures:', initPictures)
+        if (fileLists.length === 0) {
+            this.setState({
+                fileLists: initPictures || [],
+            })
+        }
     }
 
     componentWillReceiveProps(nextProps) {
         console.log(nextProps)
+        const { fileLists } = this.state
         if (nextProps.initPictures && nextProps.initPictures.length) {
             const fileArr = nextProps.initPictures.slice()
             let imgIndex = 0
@@ -40,7 +47,7 @@ class PicturesWall extends PureComponent {
                 item.uid = md5(item.url)
             })
             this.setState({
-                fileLists: fileArr,
+                fileLists: fileLists.length ? fileLists : fileArr,
                 imgListIndex: imgIndex,
             })
         }
@@ -116,7 +123,7 @@ class PicturesWall extends PureComponent {
                 fileLists,
             },
             () => {
-                console.log(this.state.fileLists)
+                console.log('change:', this.state.fileLists)
             }
         )
     }
@@ -129,6 +136,8 @@ class PicturesWall extends PureComponent {
                 <div className="ant-upload-text">Upload</div>
             </div>
         )
+
+        console.log('fileLists:', fileLists)
 
         const createImgList = () => {
             const arr = fileLists.map((item, i) => {

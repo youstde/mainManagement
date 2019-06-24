@@ -4,18 +4,15 @@ import { connect } from 'dva'
 import PageHeaderWrapper from '@/components/PageHeaderWrapper'
 import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
+import Button from '@/components/Button'
 
-// mock
-import skuListMock from '../mock/skulist'
-
-// import { fetchFunction } from '@/services'
-const fetchFunction = async () => ({ data: { list: [], count: 0 }, success: true })
+import { goodsBaseGet } from '@/services/common'
 
 @connect(() => ({}))
 class GoodsSkuList extends Component {
     state = {
         searchCondition: {}, // 搜索条件
-        dataSrouce: skuListMock || [], // 表格数据
+        dataSrouce: [], // 表格数据
         pagination: {
             current: 1,
             pageSize: 10,
@@ -24,26 +21,28 @@ class GoodsSkuList extends Component {
     }
 
     componentDidMount() {
-        // this.fetchData()
+        this.fetchData()
     }
 
     // 请求表格的数据
-    fetchData = (parmas = {}) => {
-        const { pageNum, ...params } = parmas
+    // 请求表格的数据
+    fetchData = () => {
         const { pagination, searchCondition } = this.state
-
-        fetchFunction({
-            pageSize: pagination.pageSize,
-            pageNum: pageNum || pagination.current,
-            ...searchCondition,
-            ...params,
-        }).then(res => {
-            if (res && res.success) {
+        const options = {
+            t: 'sku.list',
+            size: pagination.pageSize,
+            index: pagination.current,
+        }
+        if (searchCondition.q) {
+            options.q = searchCondition.q
+        }
+        goodsBaseGet(options).then(res => {
+            if (res && res.errcode === 0) {
                 this.setState({
-                    dataSrouce: res.data.list,
+                    dataSrouce: res.data,
                     pagination: {
                         ...pagination,
-                        total: res.data.count,
+                        total: res.pages.count,
                     },
                 })
             }
@@ -90,6 +89,11 @@ class GoodsSkuList extends Component {
         )
     }
 
+    editSome = id => {
+        const { history } = this.props
+        history.push(`/goods/skuedit?id=${id}`)
+    }
+
     render() {
         const { dataSrouce, pagination } = this.state
 
@@ -100,7 +104,7 @@ class GoodsSkuList extends Component {
                         {
                             label: '输入名称/编号',
                             type: 'input',
-                            key: 'searchKey',
+                            key: 'q',
                         },
                     ]}
                     buttonGroup={[{ onSearch: this.handleFormSearch }]}
@@ -109,7 +113,7 @@ class GoodsSkuList extends Component {
                     columns={[
                         {
                             title: 'skuId',
-                            dataIndex: 'skuId',
+                            dataIndex: 'skuid',
                         },
                         {
                             title: '商品图片',
@@ -117,60 +121,80 @@ class GoodsSkuList extends Component {
                         },
                         {
                             title: 'sku品名',
-                            dataIndex: 'skuName',
+                            dataIndex: 'name',
                             type: 'longText',
                         },
                         {
                             title: '品类',
-                            dataIndex: 'goodsClass',
+                            dataIndex: 'category_name',
                         },
                         {
-                            dataIndex: 'goodsType',
+                            dataIndex: 'variety_name',
                             title: '品种',
                         },
                         {
-                            dataIndex: 'area',
+                            dataIndex: 'region_name',
                             title: '产区',
                         },
                         {
-                            dataIndex: 'storecase',
+                            dataIndex: 'storage_name',
                             title: '存储情况',
                         },
                         {
-                            dataIndex: 'processcase',
+                            dataIndex: 'process_name',
                             title: '加工情况',
                         },
                         {
-                            dataIndex: 'outpackage',
+                            dataIndex: 'packing_name_a',
                             title: '外包装',
                         },
                         {
-                            dataIndex: 'innerpackage',
+                            dataIndex: 'packing_name_b',
                             title: '内包装',
                         },
                         {
-                            dataIndex: 'level',
+                            dataIndex: 'levels',
                             title: '等级',
                         },
                         {
-                            dataIndex: 'brand',
+                            dataIndex: 'brand_name',
                             title: '品牌',
                         },
                         {
-                            dataIndex: 'size',
+                            dataIndex: 'specification_name',
                             title: '规格',
                         },
                         {
-                            dataIndex: 'sizeNum',
+                            dataIndex: 'specification_value',
                             title: '规格值',
                         },
                         {
                             type: 'oprate',
                             fixed: 'right',
-                            buttons: [{ text: '查看' }, { text: '编辑' }],
+                            render: (_, item) => {
+                                return (
+                                    <div>
+                                        <Button
+                                            onClick={() => this.editSome(item.skuid)}
+                                            size="small"
+                                            type="default"
+                                        >
+                                            编辑
+                                        </Button>
+                                        <span>&nbsp;</span>
+                                        <Button
+                                            onClick={() => this.handleShowDetail(item)}
+                                            size="small"
+                                            type="default"
+                                        >
+                                            查看
+                                        </Button>
+                                    </div>
+                                )
+                            },
                         },
                     ]}
-                    scroll={{ x: 1200 }}
+                    scroll={{ x: 1600 }}
                     dataSource={dataSrouce}
                     pagination={{
                         ...pagination,

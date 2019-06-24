@@ -17,6 +17,7 @@ import spuListMock from '../mock/spulist'
 class GoodsSpuList extends Component {
     state = {
         activeId: '',
+        activeItem: {},
         showDetail: false,
         showEdit: false,
         searchCondition: {}, // 搜索条件
@@ -96,17 +97,17 @@ class GoodsSpuList extends Component {
         )
     }
 
-    handleShowDetail = id => {
+    handleShowDetail = item => {
         this.setState({
             showDetail: true,
-            activeId: id,
+            activeItem: item,
         })
     }
 
     handleHideDetail = () => {
         this.setState({
             showDetail: false,
-            activeId: '',
+            activeItem: {},
         })
     }
 
@@ -115,8 +116,13 @@ class GoodsSpuList extends Component {
         history.push(`/goods/spuedit?id=${id}`)
     }
 
+    showAddSPU = () => {
+        const { history } = this.props
+        history.push('/goods/addItem')
+    }
+
     render() {
-        const { dataSrouce, pagination, showEdit, showDetail, activeId } = this.state
+        const { activeItem, dataSrouce, pagination, showDetail } = this.state
 
         return (
             <PageHeaderWrapper>
@@ -130,6 +136,11 @@ class GoodsSpuList extends Component {
                     ]}
                     buttonGroup={[{ onSearch: this.handleFormSearch }]}
                 />
+                <div style={{ textAlign: 'right', paddingBottom: '10px' }}>
+                    <Button onClick={() => this.showAddSPU()} size="small" type="default">
+                        新增商品SPU
+                    </Button>
+                </div>
                 <BasicTable
                     columns={[
                         {
@@ -182,11 +193,11 @@ class GoodsSpuList extends Component {
                         },
                         {
                             type: 'oprate',
-                            render: (_, { spuid: itemId }) => {
+                            render: (_, item) => {
                                 return (
                                     <div>
                                         <Button
-                                            onClick={() => this.editSome(itemId)}
+                                            onClick={() => this.editSome(item.spuid)}
                                             size="small"
                                             type="default"
                                         >
@@ -194,7 +205,7 @@ class GoodsSpuList extends Component {
                                         </Button>
                                         <span>&nbsp;</span>
                                         <Button
-                                            onClick={() => this.handleShowDetail(itemId)}
+                                            onClick={() => this.handleShowDetail(item)}
                                             size="small"
                                             type="default"
                                         >
@@ -219,7 +230,7 @@ class GoodsSpuList extends Component {
                     visible={showDetail}
                     onCancel={this.handleHideDetail}
                 >
-                    <Detail activeId={activeId} />
+                    <Detail dataSource={activeItem} handCloseBc={this.handleHideDetail} />
                 </Modal>
             </PageHeaderWrapper>
         )

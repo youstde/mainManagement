@@ -1,74 +1,54 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'dva'
-import { message, Upload, Modal } from 'antd'
+import { Row, Col, Button } from 'antd'
 
 import DetailList from '@/components/DetailList'
 // import Button from '@/components/Button'
 
-// mock
-import spuDetailMock from '../mock/spuDetail'
-
-function getBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.readAsDataURL(file)
-        reader.onload = () => resolve(reader.result)
-        reader.onerror = error => reject(error)
-    })
-}
+import { goodsBaseGet } from '@/services/common'
 
 @connect(() => ({}))
 class SpuListDetail extends PureComponent {
     state = {
-        detail: spuDetailMock || {},
-        previewVisible: false,
-        previewImage: '',
-        fileList: [
-            {
-                uid: '-1',
-                name: 'xxx.png',
-                status: 'done',
-                url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-            },
-            {
-                uid: '-2',
-                name: 'xxx.png',
-                status: 'done',
-                url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-            },
-        ],
+        detailList: {},
     }
 
     componentDidMount() {
-        // this.fetchOrderDetail()
+        this.fetchData()
     }
 
-    // 获取详情
-    fetchOrderDetail = () => {}
-
-    handleCancel = () => this.setState({ previewVisible: false })
-
-    handlePreview = async file => {
-        if (!file.url && !file.preview) {
-            file.preview = await getBase64(file.originFileObj)
-        }
-
-        this.setState({
-            previewImage: file.url || file.preview,
-            previewVisible: true,
+    fetchData = () => {
+        const {
+            dataSource: { spuid },
+        } = this.props
+        goodsBaseGet({
+            t: 'spu.info',
+            spuid,
+        }).then(res => {
+            if (res && res.errcode === 0) {
+                this.setState({
+                    detailList: res.data,
+                })
+            }
         })
     }
 
-    handleChange = ({ fileList }) => this.setState({ fileList })
-
-    removeImgBc = () => {
-        message.warning('请点击列表中编辑进行删除，如果没有编辑按钮，可能你没有此项操作的权限!')
-        return false
+    handleGoBack = () => {
+        const { handCloseBc } = this.props
+        handCloseBc()
     }
 
     render() {
-        const { detail, previewVisible, previewImage, fileList } = this.state
+        const { detailList } = this.state
         const { dataSource } = this.props
+
+        const createImgLists = () => {
+            const { pictures } = dataSource
+            const arr = pictures.map((item, i) => {
+                return <img style={{ width: '150px' }} src={item.url} alt="" key={i} />
+            })
+            return arr
+        }
 
         return (
             <Fragment>
@@ -88,7 +68,9 @@ class SpuListDetail extends PureComponent {
                         },
                         {
                             label: '产区',
-                            value: dataSource.region_name,
+                            value: `${detailList.region_lv1}/${detailList.region_lv2}/${
+                                detailList.region_lv3
+                            }`,
                         },
                         {
                             label: '存储情况',
@@ -100,20 +82,26 @@ class SpuListDetail extends PureComponent {
                         },
                     ]}
                 />
-                <div className="clearfix">
-                    <Upload
-                        action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-                        listType="picture-card"
-                        fileList={fileList}
-                        onPreview={this.handlePreview}
-                        onChange={this.handleChange}
-                        onRemove={this.removeImgBc}
-                    />
-                    <Modal visible={previewVisible} footer={null} onCancel={this.handleCancel}>
-                        <img alt="example" style={{ width: '100%' }} src={previewImage} />
-                    </Modal>
+                <div>
+                    <Row>
+                        <Col span={5} style={{ textAlign: 'right' }}>
+                            商品图片:
+                        </Col>
+                        <Col span={19}>{createImgLists()}</Col>
+                    </Row>
                 </div>
-                <div>商品详情</div>
+                <p>图文详情:</p>
+                <div style={{ padding: '40px 20px', border: '1px solid #f1f1f1' }}>
+                    <div
+                        className="braft-output-content"
+                        dangerouslySetInnerHTML={{ __html: detailList.describe }}
+                    />
+                </div>
+                <div style={{ padding: '30px 0', textAlign: 'right' }}>
+                    <Button onClick={this.handleGoBack} type="primary">
+                        关闭
+                    </Button>
+                </div>
             </Fragment>
         )
     }

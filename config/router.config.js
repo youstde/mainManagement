@@ -75,14 +75,26 @@ export default [
                     },
                     {
                         path: '/goods/spuedit',
-                        name: '编辑',
+                        name: '编辑SPU',
                         hideInMenu: true,
                         component: './Goods/SpuList/edit',
+                    },
+                    {
+                        path: '/goods/addItem',
+                        name: '新增商品SPU',
+                        hideInMenu: true,
+                        component: './Goods/SpuList/addItem',
                     },
                     {
                         path: '/goods/skulist',
                         name: 'sku列表',
                         component: './Goods/SkuList',
+                    },
+                    {
+                        path: '/goods/skuedit',
+                        name: '编辑SKU',
+                        hideInMenu: true,
+                        component: './Goods/SkuList/edit',
                     },
                     {
                         path: '/goods/storegoodslist',
