@@ -31,6 +31,32 @@ export const generalPost = async (params = {}, formData) =>
         data: formData,
     })
 
+// 采购
+export const purchasePost = async (params = {}, formData) =>
+    createAPI('/purchase', 'post', {
+        params,
+        data: formData,
+    })
+
+// 采购get请求的基础
+export const purchaseGet = async (params = {}) =>
+    createAPI('/purchase', 'get', {
+        params,
+    })
+
+// delivers get请求的基础
+export const deliversGet = async (params = {}) =>
+    createAPI('/delivers', 'get', {
+        params,
+    })
+
+// delivers post请求的基础
+export const deliversPost = async (params = {}, formData) =>
+    createAPI('/delivers', 'post', {
+        params,
+        data: formData,
+    })
+
 // 门店get请求的基础
 export const goodsBaseGet = async (params = {}) =>
     createAPI('/goods', 'get', {

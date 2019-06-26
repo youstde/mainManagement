@@ -1,6 +1,12 @@
+/* eslint-disable camelcase */
 /* eslint-disable no-underscore-dangle */
 import React, { Component } from 'react'
 import { Table, Input, Button, Form } from 'antd'
+
+import { purchasePost } from '@/services/common'
+
+import { createSign } from '@/utils/utils'
+import md5 from 'md5'
 
 const EditableContext = React.createContext()
 
@@ -103,7 +109,6 @@ class EditableTable extends Component {
         const { tabelData } = this.props
         this.state = {
             dataSource: tabelData || [],
-            count: 2,
         }
     }
 
@@ -120,24 +125,74 @@ class EditableTable extends Component {
     }
 
     handleAdd = data => {
-        const { count, dataSource } = this.state
-        const newData = data || {}
+        const { dataSource } = this.state
+        const newData = data || dataSource
         this.setState({
-            dataSource: [...dataSource, newData],
-            count: count + 1,
+            dataSource: newData,
         })
     }
 
     handleSave = row => {
+        const { ids, inputChangeBc } = this.props
         const { dataSource } = this.state
         const newData = [...dataSource]
-        const index = newData.findIndex(item => row.key === item.key)
+        const index = newData.findIndex(item => row.id === item.id)
         const item = newData[index]
         newData.splice(index, 1, {
             ...item,
             ...row,
         })
         this.setState({ dataSource: newData })
+
+        const {
+            id,
+            skuid,
+            specification_real,
+            quantity_real,
+            price_unit,
+            price_total,
+            weight_net,
+        } = row
+        const params = {
+            t: 'sku.save',
+            id,
+            args: ids,
+            skuid,
+        }
+        if (specification_real) params.specification_real = specification_real
+        if (quantity_real) params.quantity_real = quantity_real
+        if (price_unit) params.price_unit = price_unit
+        if (price_total) params.price_total = price_total
+        if (weight_net) params.weight_net = weight_net
+        this.createSignOptions(params)
+        const formData = new FormData()
+        Object.keys(params).forEach(key => {
+            formData.append(key, params[key])
+        })
+        purchasePost('', formData).then(res => {
+            if (res && res.errcode === 0) {
+                const { additional } = res
+                inputChangeBc(additional)
+            }
+        })
+    }
+
+    createSignOptions = params => {
+        const uuId = localStorage.getItem('uuId')
+        if (uuId) {
+            params.sk = uuId
+        }
+        const userInfoStr = localStorage.getItem('user_info')
+        let localUk = ''
+        if (userInfoStr) {
+            const userInfo = JSON.parse(userInfoStr)
+            localUk = userInfo.uk
+        }
+        params.uk = localUk
+        params.ver = '1.0.0'
+        params.ts = Date.parse(new Date().toUTCString()) / 1000
+
+        params.sign = md5(createSign(params))
     }
 
     submit = () => {
@@ -185,7 +240,7 @@ class EditableTable extends Component {
             <div>
                 {ButtonArr}
                 <Table
-                    scroll={{ x: 1400 }}
+                    scroll={{ x: 2100 }}
                     components={components}
                     rowClassName={() => 'editable-row'}
                     bordered

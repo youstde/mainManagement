@@ -97,6 +97,12 @@ export default [
                         component: './Goods/SkuList/edit',
                     },
                     {
+                        path: '/goods/addSkuItem',
+                        name: '新增商品SKU',
+                        hideInMenu: true,
+                        component: './Goods/SkuList/addItem',
+                    },
+                    {
                         path: '/goods/storegoodslist',
                         name: '门店商品列表',
                         component: './Goods/StoreGoodsList',
@@ -197,6 +203,12 @@ export default [
                                 name: '采购单列表',
                                 component: './Purchase/PurchaseBill',
                             },
+                            {
+                                path: '/purchase/purchasebill/detail',
+                                name: '采购单详情',
+                                hideInMenu: true,
+                                component: './Purchase/PurchaseBill/detail',
+                            },
                         ],
                     },
                     {
@@ -207,6 +219,12 @@ export default [
                                 path: '/purchase/dispatchbill/list',
                                 name: '发货单列表',
                                 component: './Purchase/Dispatchbill',
+                            },
+                            {
+                                path: '/purchase/dispatchbill/detail',
+                                name: '发货单详情',
+                                hideInMenu: true,
+                                component: './Purchase/Dispatchbill/detail',
                             },
                         ],
                     },

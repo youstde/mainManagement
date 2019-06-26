@@ -6,12 +6,15 @@ import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
 
-// import { fetchFunction } from '@/services'
-const fetchFunction = async () => ({ data: { list: [], count: 0 }, success: true })
+import { purchasePost, configurationGet, goodsBaseGet } from '@/services/common'
+import { createSignOptions, clearDate } from '@/utils/utils'
 
 @connect(() => ({}))
 class PurchaseBillList extends Component {
     state = {
+        providerCid: 'A2CDF5CDE38BEFEB3E',
+        providerData: [],
+        skuData: [],
         searchCondition: {}, // 搜索条件
         dataSrouce: [], // 表格数据
         pagination: {
@@ -23,26 +26,63 @@ class PurchaseBillList extends Component {
 
     componentDidMount() {
         this.fetchData()
+        this.fetchProviderData()
+        this.fetchSkuData()
     }
 
     // 请求表格的数据
-    fetchData = (parmas = {}) => {
-        const { pageNum, ...params } = parmas
+    fetchData = () => {
         const { pagination, searchCondition } = this.state
 
-        fetchFunction({
-            pageSize: pagination.pageSize,
-            pageNum: pageNum || pagination.current,
-            ...searchCondition,
-            ...params,
-        }).then(res => {
-            if (res && res.success) {
+        const params = {
+            t: 'orders',
+            index: pagination.current,
+            size: pagination.pageSize,
+        }
+        if (searchCondition.supplier_id) params.supplier_id = searchCondition.supplier_id
+        if (searchCondition.date) params.date = clearDate(searchCondition.date)
+        if (searchCondition.status !== '') params.status = searchCondition.status
+        if (searchCondition.skuid) params.skuid = searchCondition.skuid
+        if (searchCondition.buyer) params.buyer = searchCondition.buyer
+        createSignOptions(params)
+        const formData = new FormData()
+        Object.keys(params).forEach(key => {
+            formData.append(key, params[key])
+        })
+        purchasePost('', formData).then(res => {
+            if (res && res.errcode === 0) {
                 this.setState({
-                    dataSrouce: res.data.list,
+                    dataSrouce: res.data,
                     pagination: {
                         ...pagination,
-                        total: res.data.count,
+                        total: res.pages.count,
                     },
+                })
+            }
+        })
+    }
+
+    fetchProviderData = () => {
+        const { providerCid } = this.state
+        configurationGet({
+            t: 'values',
+            cid: providerCid,
+        }).then(res => {
+            if (res && res.errcode === 0) {
+                this.setState({
+                    providerData: res.data[providerCid],
+                })
+            }
+        })
+    }
+
+    fetchSkuData = () => {
+        goodsBaseGet({
+            t: 'sku.list',
+        }).then(res => {
+            if (res && res.errcode === 0) {
+                this.setState({
+                    skuData: res.data,
                 })
             }
         })
@@ -88,46 +128,74 @@ class PurchaseBillList extends Component {
         )
     }
 
+    handleShowDetail = serialNo => {
+        const { history } = this.props
+        history.push(`/purchase/purchasebill/detail?serialNo=${serialNo}`)
+    }
+
+    handleProviderChange = value => {
+        console.log(`selected ${value}`)
+    }
+
     render() {
-        const { dataSrouce, pagination } = this.state
+        const { dataSrouce, pagination, providerData, skuData } = this.state
+
+        function createRoleOptions() {
+            const roleOptions = providerData.map(item => {
+                return {
+                    key: item.id,
+                    value: item.name,
+                }
+            })
+            return roleOptions
+        }
+
+        function createSkuOptions() {
+            const skuOptions = skuData.map(item => {
+                return {
+                    key: item.skuid,
+                    value: item.name,
+                }
+            })
+            return skuOptions
+        }
 
         return (
             <PageHeaderWrapper>
                 <SearchForm
                     data={[
-                        {
-                            label: '采购单号',
-                            type: 'input',
-                            key: 'inputKey',
-                        },
+                        // {
+                        //     label: '采购单号',
+                        //     type: 'input',
+                        //     key: 'q',
+                        // },
                         {
                             label: '采购日期',
                             type: 'datepicker',
-                            options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
-                            key: 'selectKey',
+                            key: 'date',
                         },
                         {
                             label: '供应商',
                             type: 'select',
-                            key: 'dateKey',
-                            options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
+                            key: 'supplier_id',
+                            options: createRoleOptions(),
                         },
                         {
                             label: '采购人员',
                             type: 'input',
-                            key: 'rangedateKey',
+                            key: 'buyer',
                         },
                         {
                             label: '状态',
                             type: 'select',
                             key: 'status',
-                            options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
+                            options: [{ key: 0, value: '未处理' }, { key: 1, value: '已处理' }],
                         },
                         {
                             label: 'sku品名',
                             type: 'select',
-                            key: 'skuname',
-                            options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
+                            key: 'skuid',
+                            options: createSkuOptions(),
                         },
                     ]}
                     buttonGroup={[
@@ -137,108 +205,61 @@ class PurchaseBillList extends Component {
                 />
                 <div style={{ textAlign: 'right', paddingBottom: '10px' }}>
                     <Button onClick={() => this.handleShowEdit()} size="small" type="default">
-                        生成采购单
+                        生成发货单
                     </Button>
                 </div>
                 <BasicTable
                     columns={[
                         {
                             title: '采购单号',
-                            dataIndex: 'col1',
+                            dataIndex: 'serial_no',
                         },
                         {
                             title: '采购日期',
-                            dataIndex: 'col2',
+                            dataIndex: 'buy_date',
                         },
                         {
                             title: '采购供应商',
-                            dataIndex: 'amount',
-                            type: 'amount',
+                            dataIndex: 'supplier_name',
                         },
                         {
                             title: '采购人员',
-                            dataIndex: 'datecol',
-                            type: 'date',
+                            dataIndex: 'buyer',
                         },
                         {
-                            dataIndex: 'key-0',
+                            dataIndex: 'cost_total',
                             title: '采购总成本',
                         },
                         {
-                            dataIndex: 'key-1',
+                            dataIndex: 'quantity_total',
                             title: '采购总件数',
                         },
                         {
-                            dataIndex: 'key-2',
-                            title: 'skuID',
-                        },
-                        {
-                            dataIndex: 'key-3',
-                            title: 'sku品名',
-                        },
-                        {
-                            dataIndex: 'key-4',
-                            title: '品类',
-                        },
-                        {
-                            dataIndex: 'key-5',
-                            title: '产区',
-                        },
-                        {
-                            dataIndex: 'key-6',
-                            title: '品种',
-                        },
-                        {
-                            dataIndex: 'key-7',
-                            title: '存储情况',
-                        },
-                        {
-                            dataIndex: 'key-8',
-                            title: '加工情况',
-                        },
-                        {
-                            dataIndex: 'key-9',
-                            title: '内包装',
-                        },
-                        {
-                            dataIndex: 'key-10',
-                            title: '外包装',
-                        },
-                        {
-                            dataIndex: 'key-11',
-                            title: '实际规格值',
-                        },
-                        {
-                            dataIndex: 'key-12',
-                            title: '净重',
-                        },
-                        {
-                            dataIndex: 'key-13',
-                            title: '采购单价',
-                        },
-                        {
-                            dataIndex: 'key-14',
-                            title: '采购成本',
-                        },
-                        {
-                            dataIndex: 'key-15',
-                            title: '订货门店名称',
-                        },
-                        {
-                            dataIndex: 'key-16',
-                            title: '对应订货数量',
-                        },
-                        {
-                            dataIndex: 'key-17',
                             title: '采购单状态',
+                            render: (_, { status }) => {
+                                let text = '未处理'
+                                if (status !== 0) text = '已处理'
+                                return <span>{text}</span>
+                            },
                         },
                         {
-                            fixed: 'right',
+                            // fixed: 'right',
                             type: 'oprate',
-                            buttons: [{ text: '查看详情' }, { text: '编辑' }],
+                            render: (_, { serial_no: serialNo }) => {
+                                return (
+                                    <div>
+                                        <Button
+                                            onClick={() => this.handleShowDetail(serialNo)}
+                                            size="small"
+                                            type="default"
+                                        >
+                                            查看详情
+                                        </Button>
+                                    </div>
+                                )
+                            },
                         },
                     ]}
-                    scroll={{ x: 2100 }}
                     dataSource={dataSrouce}
                     pagination={{
                         ...pagination,

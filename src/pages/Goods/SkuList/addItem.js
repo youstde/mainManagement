@@ -19,7 +19,7 @@ import { configurationGet, goodsBaseGet, generalGet, goodsPost } from '@/service
 const { Option } = Select
 
 @connect(() => ({}))
-class SkuListEdit extends PureComponent {
+class SkuListAdd extends PureComponent {
     state = {
         packageACid: '103204C3AD09E23037',
         packageAData: [],
@@ -30,7 +30,6 @@ class SkuListEdit extends PureComponent {
         specificationCid: 'ABBF4E7B52C66C5D36',
         specificationData: [],
         classData: [],
-        dataSource: {},
         CascaderOptions: [],
         spuLists: [],
         areaIdArr: [],
@@ -43,65 +42,11 @@ class SkuListEdit extends PureComponent {
     }
 
     componentDidMount() {
-        console.log(this.props)
-        const {
-            location: { query },
-        } = this.props
-        const activeId = query.id
-
-        this.setState(
-            {
-                activeId,
-            },
-            () => {
-                // 获取详情数据
-                this.fetchData()
-                // 获取spu列表
-                this.fetchSpuList()
-                this.fetchPackageAData()
-                this.fetchPackageBData()
-                this.fetchBrandData()
-                this.fetchSpecificationData()
-            }
-        )
-    }
-
-    fetchData = () => {
-        const { activeId } = this.state
-        goodsBaseGet({
-            t: 'sku.info',
-            skuid: activeId,
-        }).then(res => {
-            if (res && res.errcode === 0) {
-                const {
-                    pictures_same_spu: picturesSameSpu,
-                    describe_same_spu: describeSameSpu,
-                } = res.data
-                this.setState({
-                    dataSource: res.data,
-                    picturesSameSpu,
-                    describeSameSpu,
-                    editorState: BraftEditor.createEditorState(res.data.describe),
-                })
-                const {
-                    dataSource: { spuid },
-                } = this.state
-                goodsBaseGet({
-                    t: 'spu.info',
-                    spuid,
-                }).then(data => {
-                    if (data && data.errcode === 0) {
-                        const { describe, pictures } = data.data
-                        this.setState({
-                            describeSameSpu: 1,
-                            spuDescribe: describe,
-                            picturesSameSpu: 1,
-                            spuPictures: pictures,
-                        })
-                    }
-                })
-            }
-        })
+        this.fetchSpuList()
+        this.fetchPackageAData()
+        this.fetchPackageBData()
+        this.fetchBrandData()
+        this.fetchSpecificationData()
     }
 
     fetchSpuList = () => {
@@ -192,8 +137,8 @@ class SkuListEdit extends PureComponent {
 
     handleSubmit = e => {
         e.preventDefault()
-        const { form } = this.props
-        const { editorState, activeId, picturesSameSpu, describeSameSpu } = this.state
+        const { form, history } = this.props
+        const { editorState, picturesSameSpu, describeSameSpu } = this.state
         const htmlContent = editorState.toHTML()
         form.validateFieldsAndScroll((err, values) => {
             if (!err) {
@@ -201,7 +146,6 @@ class SkuListEdit extends PureComponent {
                 console.log(picturesSameSpu, describeSameSpu)
                 const params = {
                     t: 'sku.save',
-                    skuid: activeId,
                     spuid: values.spuid,
                     packing_aid: values.packing_aid,
                     packing_bid: values.packing_bid,
@@ -227,8 +171,9 @@ class SkuListEdit extends PureComponent {
                 console.log('Received values of form: ', values, htmlContent)
                 goodsPost('', formData).then(res => {
                     if (res && res.errcode === 0) {
-                        message.success('操作成功!', 2)
-                        this.fetchData()
+                        message.success('操作成功!', 2, () => {
+                            history.replace('/goods/skulist')
+                        })
                     }
                 })
             }
@@ -241,10 +186,13 @@ class SkuListEdit extends PureComponent {
     }
 
     handleToSamePictureChange = e => {
+        const { form } = this.props
         const { checked } = e.target
-        const {
-            dataSource: { spuid },
-        } = this.state
+        const spuid = form.getFieldValue('spuid')
+        if (!spuid) {
+            message.warn('请选择SPU', 2)
+            return
+        }
         if (checked) {
             goodsBaseGet({
                 t: 'spu.info',
@@ -267,9 +215,12 @@ class SkuListEdit extends PureComponent {
 
     handleToSameDescribeChange = e => {
         const { checked } = e.target
-        const {
-            dataSource: { spuid },
-        } = this.state
+        const { form } = this.props
+        const spuid = form.getFieldValue('spuid')
+        if (!spuid) {
+            message.warn('请选择SPU', 2)
+            return
+        }
         if (checked) {
             goodsBaseGet({
                 t: 'spu.info',
@@ -295,7 +246,6 @@ class SkuListEdit extends PureComponent {
             form: { getFieldDecorator },
         } = this.props
         const {
-            dataSource,
             editorState,
             spuLists,
             packageAData,
@@ -368,7 +318,6 @@ class SkuListEdit extends PureComponent {
                     </div>
                     <Form.Item label="spu">
                         {getFieldDecorator('spuid', {
-                            initialValue: dataSource.spuid,
                             rules: [
                                 {
                                     required: true,
@@ -390,9 +339,7 @@ class SkuListEdit extends PureComponent {
                     <Row>
                         <Col span={8}>
                             <Form.Item label="外包装">
-                                {getFieldDecorator('packing_aid', {
-                                    initialValue: dataSource.packing_aid,
-                                })(
+                                {getFieldDecorator('packing_aid')(
                                     <Select onChange={this.handleSelectChange}>
                                         {createOption(packageAData)}
                                     </Select>
@@ -401,9 +348,7 @@ class SkuListEdit extends PureComponent {
                         </Col>
                         <Col span={8}>
                             <Form.Item label="内包装">
-                                {getFieldDecorator('packing_bid', {
-                                    initialValue: dataSource.packing_bid,
-                                })(
+                                {getFieldDecorator('packing_bid')(
                                     <Select onChange={this.handleSelectChange}>
                                         {createOption(packageBData)}
                                     </Select>
@@ -412,18 +357,14 @@ class SkuListEdit extends PureComponent {
                         </Col>
                         <Col span={8}>
                             <Form.Item label="等级">
-                                {getFieldDecorator('levels', {
-                                    initialValue: dataSource.levels,
-                                })(<Input />)}
+                                {getFieldDecorator('levels')(<Input />)}
                             </Form.Item>
                         </Col>
                     </Row>
                     <Row>
                         <Col span={8}>
                             <Form.Item label="品牌">
-                                {getFieldDecorator('brand_id', {
-                                    initialValue: dataSource.brand_id,
-                                })(
+                                {getFieldDecorator('brand_id')(
                                     <Select onChange={this.handleSelectChange}>
                                         {createOption(brandData)}
                                     </Select>
@@ -432,16 +373,12 @@ class SkuListEdit extends PureComponent {
                         </Col>
                         <Col span={8}>
                             <Form.Item label="规格值">
-                                {getFieldDecorator('specification_value', {
-                                    initialValue: dataSource.specification_value,
-                                })(<Input />)}
+                                {getFieldDecorator('specification_value')(<Input />)}
                             </Form.Item>
                         </Col>
                         <Col span={8}>
                             <Form.Item label="规格">
-                                {getFieldDecorator('specification_id', {
-                                    initialValue: dataSource.specification_id,
-                                })(
+                                {getFieldDecorator('specification_id')(
                                     <Select onChange={this.handleSelectChange}>
                                         {createOption(specificationData)}
                                     </Select>
@@ -476,19 +413,13 @@ class SkuListEdit extends PureComponent {
                     ) : (
                         <Form.Item label="图片">
                             {getFieldDecorator('pictures', {
-                                initialValue: dataSource.pictures,
                                 rules: [
                                     {
                                         required: true,
                                         message: 'Please input your E-mail!',
                                     },
                                 ],
-                            })(
-                                <UploadImg
-                                    initPictures={dataSource.pictures}
-                                    changeBc={this.handleUploadImg}
-                                />
-                            )}
+                            })(<UploadImg initPictures={[]} changeBc={this.handleUploadImg} />)}
                         </Form.Item>
                     )}
                     <div style={{ fontSize: '20px', color: '#1ABC9C', marginBottom: '30px' }}>
@@ -538,4 +469,4 @@ class SkuListEdit extends PureComponent {
     }
 }
 
-export default Form.create({ name: 'skuListEdit' })(SkuListEdit)
+export default Form.create({ name: 'skuListAdd' })(SkuListAdd)

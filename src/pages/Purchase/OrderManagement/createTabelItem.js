@@ -1,6 +1,8 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'dva'
-import { Form, Row, Col, Select, Button } from 'antd'
+import { Form, Input, Select, Button } from 'antd'
+
+import { storeBaseGet, purchaseGet } from '@/services/common'
 
 const { Option } = Select
 
@@ -23,24 +25,48 @@ class CreateTabelItem extends PureComponent {
                 id: 3,
             },
         ],
+        storeList: [],
     }
 
     componentDidMount() {
         // this.fetchOrderDetail()
+        this.fetchStoreData()
     }
 
     // 获取详情
     fetchOrderDetail = () => {}
 
+    fetchStoreData = () => {
+        storeBaseGet({
+            t: 'list',
+        }).then(res => {
+            if (res && res.errcode === 0) {
+                this.setState({
+                    storeList: res.data,
+                })
+            }
+        })
+    }
+
     handleCreateOrder = e => {
+        const { ids } = this.props
         e.preventDefault()
         const { form, handleCancelCreateItem } = this.props
         form.validateFields((err, values) => {
             if (!err) {
-                console.log('Received values of form: ', values)
-                window.sendMessage('update:dataSource', values)
+                purchaseGet({
+                    t: 'sku.save',
+                    args: ids,
+                    skuid: values.skuid,
+                    mch_id: values.mch_id,
+                    quantity_real: values.quantity_real,
+                }).then(res => {
+                    if (res && res.errcode === 0) {
+                        handleCancelCreateItem()
+                        window.sendMessage('update:dataSource', res.data)
+                    }
+                })
             }
-            handleCancelCreateItem()
         })
     }
 
@@ -48,7 +74,7 @@ class CreateTabelItem extends PureComponent {
         const {
             form: { getFieldDecorator },
         } = this.props
-        const { mockArr } = this.state
+        const { storeList } = this.state
 
         const formItemLayout = {
             labelCol: {
@@ -74,224 +100,49 @@ class CreateTabelItem extends PureComponent {
             arr.some(item => {
                 OptionsArr.push(
                     <Option key={item.id} value={item.id}>
-                        {item.label}
+                        {item.name}
                     </Option>
                 )
             })
             return OptionsArr.concat()
         }
 
-        const skuArrOptionsArr = createOption(mockArr)
-        const skuNameArrOptionsArr = createOption(mockArr)
-        const goodsClassOptionsArr = createOption(mockArr)
-        const goodsTypeArrOptionsArr = createOption(mockArr)
-        const areaOptionsArr = createOption(mockArr)
-        const storecaseOptionsArr = createOption(mockArr)
-        const processcaseOptionsArr = createOption(mockArr)
-        const outpackageOptionsArr = createOption(mockArr)
-        const innerpackageOptionsArr = createOption(mockArr)
-        const levelOptionsArr = createOption(mockArr)
-        const brandOptionsArr = createOption(mockArr)
-        const sizeOptionsArr = createOption(mockArr)
-        const sizeNumOptionsArr = createOption(mockArr)
-        const orderStoreOptionsArr = createOption(mockArr)
+        const skuArrOptionsArr = createOption(storeList)
 
         return (
             <Fragment>
                 <div>
                     <Form {...formItemLayout} onSubmit={this.handleCreateOrder}>
-                        <Row gutter={24}>
-                            <Col span={12}>
-                                <Form.Item label="skuId">
-                                    {getFieldDecorator('skuId', {
-                                        rules: [
-                                            {
-                                                required: true,
-                                                message: 'skuId不能为空!',
-                                            },
-                                        ],
-                                    })(<Select onChange={() => {}}>{skuArrOptionsArr}</Select>)}
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item label="sku品名">
-                                    {getFieldDecorator('skuName', {
-                                        rules: [
-                                            {
-                                                required: true,
-                                                message: 'skuId不能为空!',
-                                            },
-                                        ],
-                                    })(<Select onChange={() => {}}>{skuNameArrOptionsArr}</Select>)}
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={24}>
-                            <Col span={12}>
-                                <Form.Item label="品类">
-                                    {getFieldDecorator('goodsClass', {
-                                        rules: [
-                                            {
-                                                required: true,
-                                                message: 'skuId不能为空!',
-                                            },
-                                        ],
-                                    })(<Select onChange={() => {}}>{goodsClassOptionsArr}</Select>)}
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item label="品种">
-                                    {getFieldDecorator('goodsType', {
-                                        rules: [
-                                            {
-                                                required: true,
-                                                message: 'skuId不能为空!',
-                                            },
-                                        ],
-                                    })(
-                                        <Select onChange={() => {}}>
-                                            {goodsTypeArrOptionsArr}
-                                        </Select>
-                                    )}
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={24}>
-                            <Col span={12}>
-                                <Form.Item label="产区">
-                                    {getFieldDecorator('area', {
-                                        rules: [
-                                            {
-                                                required: true,
-                                                message: 'skuId不能为空!',
-                                            },
-                                        ],
-                                    })(<Select onChange={() => {}}>{areaOptionsArr}</Select>)}
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item label="存储情况">
-                                    {getFieldDecorator('storecase', {
-                                        rules: [
-                                            {
-                                                required: true,
-                                                message: 'skuId不能为空!',
-                                            },
-                                        ],
-                                    })(<Select onChange={() => {}}>{storecaseOptionsArr}</Select>)}
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={24}>
-                            <Col span={12}>
-                                <Form.Item label="加工情况">
-                                    {getFieldDecorator('processcase', {
-                                        rules: [
-                                            {
-                                                required: true,
-                                                message: 'skuId不能为空!',
-                                            },
-                                        ],
-                                    })(
-                                        <Select onChange={() => {}}>{processcaseOptionsArr}</Select>
-                                    )}
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item label="外包装">
-                                    {getFieldDecorator('outpackage', {
-                                        rules: [
-                                            {
-                                                required: true,
-                                                message: 'skuId不能为空!',
-                                            },
-                                        ],
-                                    })(<Select onChange={() => {}}>{outpackageOptionsArr}</Select>)}
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={24}>
-                            <Col span={12}>
-                                <Form.Item label="内包装">
-                                    {getFieldDecorator('innerpackage', {
-                                        rules: [
-                                            {
-                                                required: true,
-                                                message: 'skuId不能为空!',
-                                            },
-                                        ],
-                                    })(
-                                        <Select onChange={() => {}}>
-                                            {innerpackageOptionsArr}
-                                        </Select>
-                                    )}
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item label="等级">
-                                    {getFieldDecorator('level', {
-                                        rules: [
-                                            {
-                                                required: true,
-                                                message: 'skuId不能为空!',
-                                            },
-                                        ],
-                                    })(<Select onChange={() => {}}>{levelOptionsArr}</Select>)}
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={24}>
-                            <Col span={12}>
-                                <Form.Item label="品牌">
-                                    {getFieldDecorator('brand', {
-                                        rules: [
-                                            {
-                                                required: true,
-                                                message: 'skuId不能为空!',
-                                            },
-                                        ],
-                                    })(<Select onChange={() => {}}>{brandOptionsArr}</Select>)}
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item label="规格">
-                                    {getFieldDecorator('size', {
-                                        rules: [
-                                            {
-                                                required: true,
-                                                message: 'skuId不能为空!',
-                                            },
-                                        ],
-                                    })(<Select onChange={() => {}}>{sizeOptionsArr}</Select>)}
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={24}>
-                            <Col span={12}>
-                                <Form.Item label="规格值">
-                                    {getFieldDecorator('sizeNum', {
-                                        rules: [
-                                            {
-                                                required: true,
-                                                message: 'skuId不能为空!',
-                                            },
-                                        ],
-                                    })(<Select onChange={() => {}}>{sizeNumOptionsArr}</Select>)}
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item label="订货门店">
-                                    {getFieldDecorator('orderStore', {
-                                        rules: [
-                                            {
-                                                required: true,
-                                                message: 'skuId不能为空!',
-                                            },
-                                        ],
-                                    })(<Select onChange={() => {}}>{orderStoreOptionsArr}</Select>)}
-                                </Form.Item>
-                            </Col>
-                        </Row>
+                        <Form.Item label="skuId">
+                            {getFieldDecorator('skuid', {
+                                rules: [
+                                    {
+                                        required: true,
+                                        message: 'skuId不能为空!',
+                                    },
+                                ],
+                            })(<Input placeholder="请输入skuId" />)}
+                        </Form.Item>
+                        <Form.Item label="门店">
+                            {getFieldDecorator('mch_id', {
+                                rules: [
+                                    {
+                                        required: true,
+                                        message: '门店不能为空!',
+                                    },
+                                ],
+                            })(<Select onChange={() => {}}>{skuArrOptionsArr}</Select>)}
+                        </Form.Item>
+                        <Form.Item label="实际采购数量">
+                            {getFieldDecorator('quantity_real', {
+                                rules: [
+                                    {
+                                        required: true,
+                                        message: '采购数量不能为空!',
+                                    },
+                                ],
+                            })(<Input placeholder="请输入实际采购数量" />)}
+                        </Form.Item>
                         <Form.Item {...formItemLayoutWithOutLabel}>
                             <Button type="primary" htmlType="submit">
                                 确定

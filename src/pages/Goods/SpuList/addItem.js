@@ -173,7 +173,7 @@ class SpuListEdit extends PureComponent {
 
     handleSubmit = e => {
         e.preventDefault()
-        const { form } = this.props
+        const { form, history } = this.props
         const { editorState, activeId } = this.state
         const htmlContent = editorState.toHTML()
         form.validateFieldsAndScroll((err, values) => {
@@ -203,8 +203,9 @@ class SpuListEdit extends PureComponent {
                 console.log('Received values of form: ', values, htmlContent)
                 goodsPost('', formData).then(res => {
                     if (res && res.errcode === 0) {
-                        message.success('操作成功!', 2)
-                        this.fetchData()
+                        message.success('操作成功!', 1, () => {
+                            history.push('/goods/spulist')
+                        })
                     }
                 })
             }

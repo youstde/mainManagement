@@ -2,6 +2,7 @@ import moment from 'moment'
 import React from 'react'
 import nzh from 'nzh/cn'
 import { parse, stringify } from 'qs'
+import md5 from 'md5'
 
 export function fixedZero(val) {
     return val * 1 < 10 ? `0${val}` : val
@@ -49,6 +50,34 @@ export function createSign(params) {
     singStr += 'fresh'
     singStr = singStr.replace(/^@/, '')
     return singStr
+}
+
+export function createSignOptions(params) {
+    const uuId = localStorage.getItem('uuId')
+    if (uuId) {
+        params.sk = uuId
+    }
+    const userInfoStr = localStorage.getItem('user_info')
+    let localUk = ''
+    if (userInfoStr) {
+        const userInfo = JSON.parse(userInfoStr)
+        localUk = userInfo.uk
+    }
+    params.uk = localUk
+    params.ver = '1.0.0'
+    params.ts = Date.parse(new Date().toUTCString()) / 1000
+
+    params.sign = md5(createSign(params))
+}
+
+export function clearDate(date) {
+    const newDate = new Date(date)
+    const year = newDate.getFullYear()
+    let month = newDate.getMonth() + 1
+    let day = newDate.getDate()
+    month = month < 10 ? `0${month}` : month
+    day = day < 10 ? `0${day}` : day
+    return `${year}-${month}-${day}`
 }
 
 /**

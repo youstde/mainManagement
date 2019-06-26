@@ -1,13 +1,15 @@
+/* eslint-disable camelcase */
 import React, { Component } from 'react'
 import { connect } from 'dva'
-import { Form, Input, DatePicker, Row, Col, Select, Upload, Modal, Icon } from 'antd'
+import { Form, Input, DatePicker, Row, Col, Select, Upload, Modal, Icon, message } from 'antd'
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper'
 import EditableTable from './components/editTabel'
 import CreateTabelItem from './createTabelItem'
 import Button from '@/components/Button'
 
-import { uploadImg } from './services/index'
+import { goodsPost, generalPost, configurationGet, purchasePost } from '@/services/common'
+import { createSignOptions, clearDate } from '@/utils/utils'
 
 const { Option } = Select
 
@@ -20,84 +22,125 @@ function getBase64(file) {
     })
 }
 
-// import { fetchFunction } from '@/services'
-const fetchFunction = async () => ({ data: { list: [], count: 0 }, success: true })
-
 @connect(() => ({}))
 class PurchaseManualCreateOrder extends Component {
     state = {
-        providers: [
-            {
-                label: '南京鲜果批发',
-                id: 1,
-            },
-            {
-                label: '海南鲜果批发',
-                id: 2,
-            },
-            {
-                label: '杭州古荡批发市场',
-                id: 3,
-            },
-        ],
+        providerCid: 'A2CDF5CDE38BEFEB3E',
         showCreateOrderItem: false,
         previewVisible: false,
         previewImage: '',
-        imgList: [],
+        ids: '',
         fileList: [],
+        dataSrouce: [],
+        providerData: [],
+        pagination: {
+            current: 1,
+            pageSize: 50,
+            total: 0,
+        },
     }
 
     componentDidMount() {
-        // this.fetchData()
+        this.fetchData()
+        this.fetchProvierData()
     }
 
     // 请求表格的数据
-    fetchData = (parmas = {}) => {
-        const { pageNum, ...params } = parmas
-        const { pagination, searchCondition } = this.state
+    fetchData = () => {
+        const { pagination } = this.state
+        const { form } = this.props
+        const params = {
+            t: 'purchase.skus',
+            args: 1,
+            size: pagination.pageSize,
+            index: pagination.current,
+        }
+        createSignOptions(params)
+        const formData = new FormData()
+        Object.keys(params).forEach(key => {
+            formData.append(key, params[key])
+        })
 
-        fetchFunction({
-            pageSize: pagination.pageSize,
-            pageNum: pageNum || pagination.current,
-            ...searchCondition,
-            ...params,
-        }).then(res => {
-            if (res && res.success) {
+        goodsPost('', formData).then(res => {
+            if (res && res.errcode === 0) {
+                const { cost_total, quantity_total } = res.additional
+                form.setFieldsValue({
+                    cost_total: cost_total || '',
+                    quantity_total: quantity_total || '',
+                })
+                let str = ''
+                res.data.forEach(item => {
+                    str += `${item.id},`
+                })
+                str = str.replace(/,$/, '')
+
                 this.setState({
-                    dataSrouce: res.data.list,
+                    dataSrouce: res.data,
+                    ids: str,
                     pagination: {
                         ...pagination,
-                        total: res.data.count,
+                        total: res.pages.count,
                     },
                 })
             }
         })
     }
 
-    handleUploadImg = file => {
-        const { imgList } = this.state
-        const formData = new FormData()
-        formData.append('file', file)
-        uploadImg(formData).then(res => {
-            // ===tip===>对接口的时候以接口为准
-            imgList.push(res.url)
-            this.setState({
-                imgList,
-            })
+    fetchProvierData = () => {
+        const { providerCid } = this.state
+        configurationGet({
+            t: 'values',
+            cid: providerCid,
+        }).then(res => {
+            if (res && res.errcode === 0) {
+                this.setState({
+                    providerData: res.data[providerCid],
+                })
+            }
         })
     }
 
+    clearImgs = imgs => {
+        let str = ''
+        imgs.forEach(img => {
+            str += `${img.url},`
+        })
+        str = str.replace(/,$/, '')
+        return str
+    }
+
     handleSubmit = () => {
-        const { form } = this.props
-        const { imgList } = this.state
+        const { form, history } = this.props
+        const { fileList, ids } = this.state
         /**
-         * imgList为上传的图片地址
+         * fileList
          * values为form表单中填入的数据（要筛选一下）
          */
         form.validateFieldsAndScroll((err, values) => {
             if (!err) {
-                console.log('Received values of form: ', values)
-                console.log('imgList: ', imgList)
+                const params = {
+                    t: 'order.make',
+                    args: ids,
+                    cost_total: values.cost_total,
+                    buyer: values.buyer,
+                    buy_date: clearDate(values.buyDate),
+                    quantity_total: values.quantity_total,
+                    supplier_id: values.provider,
+                    supplier_address: values.providerAdress,
+                }
+                if (fileList.length) params.pictures = this.clearImgs(fileList)
+                createSignOptions(params)
+                const formData = new FormData()
+                Object.keys(params).forEach(key => {
+                    formData.append(key, params[key])
+                })
+                purchasePost('', formData).then(res => {
+                    if (res && res.errcode === 0) {
+                        message.success('生成成功!', 1, () => {
+                            history.push('/purchase/purchasebill/list')
+                        })
+                    }
+                })
             }
         })
     }
@@ -123,11 +166,53 @@ class PurchaseManualCreateOrder extends Component {
         this.setState({
             showCreateOrderItem: false,
         })
+        this.fetchData()
     }
 
     handleShowCreateOrder = () => {
         this.setState({
             showCreateOrderItem: true,
+        })
+    }
+
+    handleEditInputChange = params => {
+        const { form } = this.props
+        form.setFieldsValue(params)
+    }
+
+    handleImgSubmit = file => {
+        const { fileList } = this.state
+        const formData = new FormData()
+        formData.append('files[]', file)
+        generalPost(
+            {
+                t: 'upload',
+            },
+            formData
+        ).then(res => {
+            if (res && res.errcode === 0) {
+                const newItem = {
+                    url: res.data.path,
+                    uid: res.request_id,
+                }
+                this.setState({
+                    fileList: [...fileList, newItem],
+                })
+            }
+        })
+    }
+
+    handleProviderChange = id => {
+        const { form } = this.props
+        const { providerData } = this.state
+        let adress = ''
+        providerData.forEach(item => {
+            if (item.id === id) {
+                adress = item.address
+            }
+        })
+        form.setFieldsValue({
+            providerAdress: adress,
         })
     }
 
@@ -137,98 +222,99 @@ class PurchaseManualCreateOrder extends Component {
         } = this.props
         // 供应商列表Mock
         const {
-            providers,
             previewVisible,
             previewImage,
             fileList,
             showCreateOrderItem,
+            dataSrouce,
+            ids,
+            providerData,
         } = this.state
 
         const columns = [
             {
                 title: 'skuid',
-                dataIndex: 'skuId',
+                dataIndex: 'skuid',
             },
             {
                 title: 'sku品名',
-                dataIndex: 'skuName',
+                dataIndex: 'name',
             },
             {
                 title: '品类',
-                dataIndex: 'goodsClass',
+                dataIndex: 'category_name',
             },
             {
                 title: '品种',
-                dataIndex: 'goodsType',
+                dataIndex: 'variety_name',
             },
             {
                 title: '产区',
-                dataIndex: 'area',
+                dataIndex: 'region_name',
             },
             {
                 title: '存储情况',
-                dataIndex: 'storecase',
+                dataIndex: 'storage_name',
             },
             {
                 title: '加工情况',
-                dataIndex: 'processcase',
+                dataIndex: 'process_name',
             },
             {
                 title: '外包装',
-                dataIndex: 'outpackage',
+                dataIndex: 'packing_name_a',
             },
             {
                 title: '内包装',
-                dataIndex: 'innerpackage',
+                dataIndex: 'packing_name_b',
             },
             {
                 title: '等级',
-                dataIndex: 'level',
+                dataIndex: 'levels',
             },
             {
                 title: '品牌',
-                dataIndex: 'brand',
+                dataIndex: 'brand_name',
             },
             {
                 title: '规格',
-                dataIndex: 'size',
+                dataIndex: 'specification_name',
             },
             {
                 title: '规格值',
-                dataIndex: 'sizeNum',
+                dataIndex: 'specification_value',
             },
             {
-                title: '订货门店名称',
-                dataIndex: 'orderStore',
+                title: '订货门店',
+                dataIndex: 'merchant_name',
+            },
+            {
+                title: '订货数量',
+                dataIndex: 'quantity',
             },
             {
                 title: '实际规格值',
-                dataIndex: 'factSize',
+                dataIndex: 'specification_real',
                 editable: true,
             },
             {
                 title: '净重',
-                dataIndex: 'clearWeight',
+                dataIndex: 'weight_net',
                 editable: true,
             },
             {
                 title: '实际采购数量',
-                dataIndex: 'faceOrderNum',
+                dataIndex: 'quantity_real',
                 editable: true,
             },
             {
                 title: '采购单价',
-                dataIndex: 'buySinglePrice',
-                editable: true,
-            },
-            {
-                title: '订货数量',
-                dataIndex: 'orderNum',
+                dataIndex: 'price_unit',
                 editable: true,
             },
             {
                 title: '采购成本',
-                dataIndex: 'buyBeforePrice',
+                dataIndex: 'price_total',
                 editable: true,
             },
         ]
@@ -244,16 +330,6 @@ class PurchaseManualCreateOrder extends Component {
             },
         }
 
-        const providerOptionsArr = []
-        // eslint-disable-next-line array-callback-return
-        providers.some(item => {
-            providerOptionsArr.push(
-                <Option key={item.id} value={item.id}>
-                    {item.label}
-                </Option>
-            )
-        })
-
         const uploadButton = (
             <div>
                 <Icon type="plus" />
@@ -261,17 +337,28 @@ class PurchaseManualCreateOrder extends Component {
             </div>
         )
 
+        function createProviderOption() {
+            const arr = providerData.map(item => {
+                return (
+                    <Option key={item.id} value={item.id}>
+                        {item.name}
+                    </Option>
+                )
+            })
+            return arr
+        }
+
         return (
             <PageHeaderWrapper>
                 <Form {...formItemLayout} onSubmit={this.handleSubmit}>
                     <Row gutter={24}>
                         <Col span={8}>
                             <Form.Item label="采购日期">
-                                {getFieldDecorator('orderDate', {
+                                {getFieldDecorator('buyDate', {
                                     rules: [
                                         {
                                             required: true,
-                                            message: 'Please input your E-mail!',
+                                            message: '请选择采购日期!',
                                         },
                                     ],
                                 })(<DatePicker />)}
@@ -279,40 +366,38 @@ class PurchaseManualCreateOrder extends Component {
                         </Col>
                         <Col span={8}>
                             <Form.Item label="采购总成本">
-                                {getFieldDecorator('orderAllPrice', {
-                                    rules: [
-                                        {
-                                            required: true,
-                                            message: 'Please input your E-mail!',
-                                        },
-                                    ],
-                                })(<Input type="number" />)}
+                                {getFieldDecorator('cost_total')(
+                                    <Input
+                                        readOnly
+                                        type="number"
+                                        placeholder="此项为动态生成，无需填写"
+                                    />
+                                )}
                             </Form.Item>
                         </Col>
                         <Col span={8}>
                             <Form.Item label="采购人员">
-                                {getFieldDecorator('orderPeople', {
+                                {getFieldDecorator('buyer', {
                                     rules: [
                                         {
                                             required: true,
-                                            message: 'Please input your E-mail!',
+                                            message: '采购人员不能为空!',
                                         },
                                     ],
-                                })(<Input />)}
+                                })(<Input placeholder="请输入采购人员" />)}
                             </Form.Item>
                         </Col>
                     </Row>
                     <Row gutter={24}>
                         <Col span={8}>
                             <Form.Item label="采购总件数">
-                                {getFieldDecorator('orderAllNum', {
-                                    rules: [
-                                        {
-                                            required: true,
-                                            message: 'Please input your E-mail!',
-                                        },
-                                    ],
-                                })(<Input type="number" />)}
+                                {getFieldDecorator('quantity_total')(
+                                    <Input
+                                        readOnly
+                                        type="number"
+                                        placeholder="此项为动态生成，无需填写"
+                                    />
+                                )}
                             </Form.Item>
                         </Col>
                         <Col span={8}>
@@ -321,22 +406,25 @@ class PurchaseManualCreateOrder extends Component {
                                     rules: [
                                         {
                                             required: true,
-                                            message: 'Please input your E-mail!',
+                                            message: '请选择采购供应商!',
                                         },
                                     ],
-                                })(<Select onChange={() => {}}>{providerOptionsArr}</Select>)}
+                                })(
+                                    <Select
+                                        onChange={value => {
+                                            this.handleProviderChange(value)
+                                        }}
+                                    >
+                                        {createProviderOption()}
+                                    </Select>
+                                )}
                             </Form.Item>
                         </Col>
                         <Col span={8}>
                             <Form.Item label="供应商地址">
-                                {getFieldDecorator('providerAdress', {
-                                    rules: [
-                                        {
-                                            required: true,
-                                            message: 'Please input your E-mail!',
-                                        },
-                                    ],
-                                })(<Input />)}
+                                {getFieldDecorator('providerAdress')(
+                                    <Input readOnly placeholder="此项为动态生成，无需填写" />
+                                )}
                             </Form.Item>
                         </Col>
                     </Row>
@@ -346,7 +434,9 @@ class PurchaseManualCreateOrder extends Component {
                     <Col span={21}>
                         <div className="clearfix">
                             <Upload
-                                action={this.handleUploadImg}
+                                action={file => {
+                                    this.handleImgSubmit(file)
+                                }}
                                 listType="picture-card"
                                 fileList={fileList}
                                 onPreview={this.handlePreview}
@@ -371,7 +461,10 @@ class PurchaseManualCreateOrder extends Component {
                     onCancel={this.handleCancelCreateItem}
                     destroyOnClose
                 >
-                    <CreateTabelItem handleCancelCreateItem={this.handleCancelCreateItem} />
+                    <CreateTabelItem
+                        ids={ids}
+                        handleCancelCreateItem={this.handleCancelCreateItem}
+                    />
                 </Modal>
                 <div style={{ textAlign: 'right', padding: '20px 0' }}>
                     <Button
@@ -382,13 +475,19 @@ class PurchaseManualCreateOrder extends Component {
                         创建订单
                     </Button>
                 </div>
-                <EditableTable
-                    rowKey={record => record.id}
-                    tabelLocalType={0}
-                    tabelData={null}
-                    tabelColumns={columns}
-                    handleSubmit={this.handleSubmit}
-                />
+                {dataSrouce.length ? (
+                    <EditableTable
+                        rowKey={record => record.id}
+                        tabelLocalType={0}
+                        tabelData={dataSrouce}
+                        tabelColumns={columns}
+                        handleSubmit={this.handleSubmit}
+                        inputChangeBc={this.handleEditInputChange}
+                        ids={ids}
+                    />
+                ) : (
+                    ''
+                )}
             </PageHeaderWrapper>
         )
     }

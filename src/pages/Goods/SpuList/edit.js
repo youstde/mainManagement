@@ -38,6 +38,7 @@ class SpuListEdit extends PureComponent {
 
     componentDidMount() {
         console.log(this.props)
+
         const {
             location: { query },
         } = this.props
@@ -408,7 +409,7 @@ class SpuListEdit extends PureComponent {
                             rules: [
                                 {
                                     required: true,
-                                    message: 'Please input your E-mail!',
+                                    message: '图片不能为空!',
                                 },
                             ],
                         })(

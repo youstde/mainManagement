@@ -7,18 +7,14 @@ import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
 
-// mock
-import orderMock from '../mock/ordermanagement'
-
-// import { fetchFunction } from '@/services'
-const fetchFunction = async () => ({ data: { list: [], count: 0 }, success: true })
+import { goodsBaseGet } from '@/services/common'
 
 @connect(() => ({}))
 class PurchaseOrderManagement extends Component {
     state = {
         selectedRowKeys: [],
         searchCondition: {}, // 搜索条件
-        dataSrouce: orderMock || [], // 表格数据
+        dataSrouce: [], // 表格数据
         pagination: {
             current: 1,
             pageSize: 10,
@@ -27,26 +23,39 @@ class PurchaseOrderManagement extends Component {
     }
 
     componentDidMount() {
-        // this.fetchData()
+        this.fetchData()
     }
 
     // 请求表格的数据
-    fetchData = (parmas = {}) => {
-        const { pageNum, ...params } = parmas
+    fetchData = () => {
         const { pagination, searchCondition } = this.state
 
-        fetchFunction({
+        const options = {
+            t: 'purchase.skus',
             pageSize: pagination.pageSize,
-            pageNum: pageNum || pagination.current,
-            ...searchCondition,
-            ...params,
-        }).then(res => {
-            if (res && res.success) {
+            pageNum: pagination.current,
+        }
+
+        if (searchCondition.q) {
+            options.q = searchCondition.q
+        }
+        if (searchCondition.mch_id) {
+            options.mch_id = searchCondition.mch_id
+        }
+        if (searchCondition.date) {
+            options.date = searchCondition.date
+        }
+        if (searchCondition.status) {
+            options.status = searchCondition.status
+        }
+
+        goodsBaseGet(options).then(res => {
+            if (res && res.errcode === 0) {
                 this.setState({
-                    dataSrouce: res.data.list,
+                    dataSrouce: res.data,
                     pagination: {
                         ...pagination,
-                        total: res.data.count,
+                        total: res.pages.count,
                     },
                 })
             }
@@ -71,9 +80,6 @@ class PurchaseOrderManagement extends Component {
         )
     }
 
-    // 查询表单下载
-    handleFromDownload = values => {}
-
     // 切换分页
     handleChangePage = page => {
         const { pagination } = this.state
@@ -95,6 +101,7 @@ class PurchaseOrderManagement extends Component {
 
     onSelectChange = selectedRowKeys => {
         this.setState({ selectedRowKeys })
+        console.log(selectedRowKeys)
     }
 
     // 生成采购单
@@ -102,7 +109,12 @@ class PurchaseOrderManagement extends Component {
         const { selectedRowKeys } = this.state
         const { history } = this.props
         if (selectedRowKeys.length) {
-            history.push('/purchase/createorder')
+            let str = ''
+            selectedRowKeys.forEach(item => {
+                str += `${item}_`
+            })
+            str = str.replace(/_$/, '')
+            history.push(`/purchase/createorder?ids=${str}`)
         } else {
             message.warning('请勾选你需要生成采购单的订单!')
         }
@@ -129,23 +141,23 @@ class PurchaseOrderManagement extends Component {
                         {
                             label: 'sku id/品名',
                             type: 'input',
-                            key: 'skuId',
+                            key: 'q',
                         },
                         {
                             label: '门店',
                             type: 'select',
                             options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
-                            key: 'storeName',
+                            key: 'mch_id',
                         },
                         {
                             label: '订货时间',
                             type: 'datepicker',
-                            key: 'orderDate',
+                            key: 'date',
                         },
                         {
                             label: '状态',
                             type: 'select',
-                            key: 'state',
+                            key: 'status',
                             options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
                         },
                     ]}
@@ -164,61 +176,69 @@ class PurchaseOrderManagement extends Component {
                     columns={[
                         {
                             title: '订货日期',
-                            dataIndex: 'orderDate',
+                            dataIndex: 'create_time',
                             type: 'date',
-                            format: 'YYYY-MM-DD',
+                            // format: 'YYYY-MM-DD',
                         },
                         {
                             title: '订货门店',
-                            dataIndex: 'orderStore',
+                            dataIndex: 'merchant_name',
                         },
                         {
                             title: 'skuId',
-                            dataIndex: 'skuId',
+                            dataIndex: 'skuid',
                         },
                         {
                             title: 'sku品名',
-                            dataIndex: 'skuName',
+                            dataIndex: 'name',
                             type: 'longText',
                         },
                         {
-                            dataIndex: 'goodsClass',
+                            dataIndex: 'category_name',
                             title: '品类',
                         },
                         {
-                            dataIndex: 'area',
+                            dataIndex: 'region_name',
                             title: '产区',
                         },
                         {
-                            dataIndex: 'goodsType',
+                            dataIndex: 'variety_name',
                             title: '品种',
                         },
                         {
-                            dataIndex: 'storecase',
+                            dataIndex: 'storage_name',
                             title: '存储情况',
                         },
                         {
-                            dataIndex: 'processcase',
+                            dataIndex: 'process_name',
                             title: '加工情况',
                         },
                         {
-                            dataIndex: 'outpackage',
+                            dataIndex: 'packing_name_a',
                             title: '外包装',
                         },
                         {
-                            dataIndex: 'innerpackage',
+                            dataIndex: 'packing_name_b',
                             title: '内包装',
                         },
                         {
-                            dataIndex: 'orderNum',
+                            dataIndex: 'quantity',
                             title: '订货数量',
                         },
                         {
-                            dataIndex: 'state',
                             title: '状态',
+                            fixed: 'right',
+                            render: (_, { status }) => {
+                                let text = '未处理'
+                                if (status !== 0) {
+                                    text = '已处理'
+                                }
+                                return <p>{text}</p>
+                            },
                         },
                     ]}
                     rowKey={record => record.id}
+                    scroll={{ x: 1600 }}
                     rowSelection={rowSelection}
                     dataSource={dataSrouce}
                     pagination={{

@@ -94,6 +94,11 @@ class GoodsSkuList extends Component {
         history.push(`/goods/skuedit?id=${id}`)
     }
 
+    addItem = () => {
+        const { history } = this.props
+        history.push('/goods/addSkuItem')
+    }
+
     render() {
         const { dataSrouce, pagination } = this.state
 
@@ -109,6 +114,11 @@ class GoodsSkuList extends Component {
                     ]}
                     buttonGroup={[{ onSearch: this.handleFormSearch }]}
                 />
+                <div style={{ textAlign: 'right', paddingBottom: '10px' }}>
+                    <Button onClick={() => this.addItem()} size="small" type="default">
+                        新增商品SKU
+                    </Button>
+                </div>
                 <BasicTable
                     columns={[
                         {

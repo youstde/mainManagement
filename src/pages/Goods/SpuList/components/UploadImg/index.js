@@ -16,7 +16,7 @@ function getBase64(file) {
 
 class PicturesWall extends PureComponent {
     state = {
-        fileLists: [],
+        fileList: [],
         previewVisible: false,
         previewImage: '',
         showImgList: false,
@@ -25,18 +25,18 @@ class PicturesWall extends PureComponent {
 
     componentDidMount() {
         const { initPictures } = this.props
-        const { fileLists } = this.state
+        const { fileList } = this.state
         console.log('initPictures:', initPictures)
-        if (fileLists.length === 0) {
+        if (fileList.length === 0) {
             this.setState({
-                fileLists: initPictures || [],
+                fileList: initPictures || [],
             })
         }
     }
 
     componentWillReceiveProps(nextProps) {
         console.log(nextProps)
-        const { fileLists } = this.state
+        const { fileList } = this.state
         if (nextProps.initPictures && nextProps.initPictures.length) {
             const fileArr = nextProps.initPictures.slice()
             let imgIndex = 0
@@ -47,7 +47,7 @@ class PicturesWall extends PureComponent {
                 item.uid = md5(item.url)
             })
             this.setState({
-                fileLists: fileLists.length ? fileLists : fileArr,
+                fileList: fileList.length ? fileList : fileArr,
                 imgListIndex: imgIndex,
             })
         }
@@ -66,11 +66,12 @@ class PicturesWall extends PureComponent {
         })
     }
 
+    // eslint-disable-next-line react/no-unused-state
     handleChange = ({ fileList }) => this.setState({ fileList })
 
     handleSubmit = file => {
         const { changeBc } = this.props
-        const { fileLists } = this.state
+        const { fileList } = this.state
         const formData = new FormData()
         formData.append('files[]', file)
         generalPost(
@@ -85,15 +86,15 @@ class PicturesWall extends PureComponent {
                     url: res.data.path,
                     uid: res.request_id,
                 }
-                if (fileLists.length) {
+                if (fileList.length) {
                     newItem.isCover = 0
                 } else {
                     newItem.isCover = 1
                 }
                 this.setState({
-                    fileLists: [...fileLists, newItem],
+                    fileList: [...fileList, newItem],
                 })
-                changeBc([...fileLists, newItem])
+                changeBc([...fileList, newItem])
             }
         })
     }
@@ -110,26 +111,40 @@ class PicturesWall extends PureComponent {
         })
     }
 
+    handleRemove = file => {
+        const { changeBc } = this.props
+        const { fileList } = this.state
+        const newUid = file.uid
+        const newArr = fileList.slice()
+        const arr = []
+        newArr.forEach(item => {
+            if (item.uid !== newUid) {
+                arr.push(item)
+            }
+        })
+        changeBc(arr)
+    }
+
     onChange = e => {
         const { value } = e.target
-        const { fileLists } = this.state
-        fileLists.forEach(item => {
+        const { fileList } = this.state
+        fileList.forEach(item => {
             item.isCover = 0
         })
-        fileLists[value].isCover = 1
+        fileList[value].isCover = 1
         this.setState(
             {
                 imgListIndex: value,
-                fileLists,
+                fileList,
             },
             () => {
-                console.log('change:', this.state.fileLists)
+                console.log('change:', this.state.fileList)
             }
         )
     }
 
     render() {
-        const { previewVisible, previewImage, fileLists, showImgList, imgListIndex } = this.state
+        const { previewVisible, previewImage, fileList, showImgList, imgListIndex } = this.state
         const uploadButton = (
             <div>
                 <Icon type="plus" />
@@ -137,10 +152,8 @@ class PicturesWall extends PureComponent {
             </div>
         )
 
-        console.log('fileLists:', fileLists)
-
         const createImgList = () => {
-            const arr = fileLists.map((item, i) => {
+            const arr = fileList.map((item, i) => {
                 return (
                     <div className={styles.imgListItem}>
                         <Radio value={i}>
@@ -159,9 +172,10 @@ class PicturesWall extends PureComponent {
                         this.handleSubmit(file)
                     }}
                     listType="picture-card"
-                    fileList={fileLists}
+                    fileList={fileList}
                     onPreview={this.handlePreview}
                     onChange={this.handleChange}
+                    onRemove={this.handleRemove}
                 >
                     {/* {fileList.length >= 3 ? null : uploadButton} */}
                     {uploadButton}
