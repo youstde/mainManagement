@@ -154,6 +154,16 @@ export default [
                         name: '品种管理',
                         component: './Property/Classmanagement',
                     },
+                    {
+                        path: '/property/cultivarmanagement/2F724448AD40D0743F',
+                        name: '轮播广告列表',
+                        component: './Property/Classmanagement',
+                    },
+                    {
+                        path: '/property/cultivarmanagement/C707297DAB4108453G',
+                        name: '走马灯文字广告',
+                        component: './Property/Classmanagement',
+                    },
                 ],
             },
             {
