@@ -140,18 +140,18 @@ class SpuListEdit extends PureComponent {
         })
     }
 
-    fetchAreaData = (code, cb) => {
+    fetchAreaData = (targetOption = {}, cb) => {
         const params = {
             t: 'regions',
         }
-        if (code) params.code = code
+        if (targetOption.code) params.code = targetOption.code
         generalGet(params).then(res => {
             if (res && res.errcode === 0) {
-                if (code) {
-                    cb(this.clearAreaData(res.data))
+                if (targetOption.code) {
+                    cb(this.clearAreaData(res.data, targetOption))
                 } else {
                     this.setState({
-                        CascaderOptions: this.clearAreaData(res.data),
+                        CascaderOptions: this.clearAreaData(res.data, targetOption),
                     })
                 }
             }
@@ -159,16 +159,25 @@ class SpuListEdit extends PureComponent {
     }
 
     // 清洗area的数据（格式化）
-    clearAreaData = data => {
+    clearAreaData = (data, targetOption) => {
         const { areaLevel } = this.state
         console.log('areaLevel:', areaLevel)
-        const arr = data.map(item => {
-            return {
+        const arr = []
+        if (targetOption.code) {
+            arr.push({
+                code: targetOption.code,
+                label: `全${targetOption.label}`,
+                value: targetOption.value,
+                isLeaf: true,
+            })
+        }
+        data.forEach(item => {
+            arr.push({
                 code: item.code,
                 value: item.id,
                 label: item.name,
                 isLeaf: areaLevel === 3,
-            }
+            })
         })
         return arr
     }
@@ -184,9 +193,8 @@ class SpuListEdit extends PureComponent {
     loadData = selectedOptions => {
         const targetOption = selectedOptions[selectedOptions.length - 1]
         targetOption.loading = true
-
-        const { code } = targetOption
-        this.fetchAreaData(code, data => {
+        console.log('targetOption:', targetOption)
+        this.fetchAreaData(targetOption, data => {
             targetOption.loading = false
             targetOption.children = data
             const { CascaderOptions } = this.state
@@ -208,7 +216,7 @@ class SpuListEdit extends PureComponent {
 
     handleSubmit = e => {
         e.preventDefault()
-        const { form } = this.props
+        const { form, history } = this.props
         const { editorState, activeId } = this.state
         const htmlContent = editorState.toHTML()
         form.validateFieldsAndScroll((err, values) => {
@@ -221,7 +229,11 @@ class SpuListEdit extends PureComponent {
                 Object.keys(values).forEach(key => {
                     if (key === 'region_arr') {
                         // eslint-disable-next-line prefer-destructuring
-                        params.region_id = values[key][2]
+                        const regionArr = values[key] || []
+                        if (regionArr.length) {
+                            const index = regionArr.length - 1
+                            params.region_id = regionArr[index]
+                        }
                         return
                     }
                     if (key === 'pictures') {
@@ -238,8 +250,9 @@ class SpuListEdit extends PureComponent {
                 console.log('Received values of form: ', values, htmlContent)
                 goodsPost('', formData).then(res => {
                     if (res && res.errcode === 0) {
-                        message.success('操作成功!', 2)
-                        this.fetchData()
+                        message.success('操作成功!', 1, () => {
+                            history.goBack()
+                        })
                     }
                 })
             }
@@ -361,19 +374,13 @@ class SpuListEdit extends PureComponent {
                         )}
                     </Form.Item>
                     <div style={{ textAlign: 'center' }}>
-                        默认产区：{dataSource.region_lv1}/{dataSource.region_lv2}/
-                        {dataSource.region_lv3}（
-                        <strong>编辑时请重新手动选择,可以和以前的一样</strong>）
+                        默认产区：
+                        <strong>
+                            {dataSource.region_lv1}/{dataSource.region_lv2}/{dataSource.region_lv3}
+                        </strong>
                     </div>
                     <Form.Item label="产区">
-                        {getFieldDecorator('region_arr', {
-                            rules: [
-                                {
-                                    required: true,
-                                    message: '请选择产地',
-                                },
-                            ],
-                        })(
+                        {getFieldDecorator('region_arr')(
                             <Cascader
                                 options={CascaderOptions}
                                 loadData={this.loadData}

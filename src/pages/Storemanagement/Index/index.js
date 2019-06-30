@@ -11,6 +11,7 @@ import SetAdmin from '../components/setAdmin'
 import AddStore from './addStore'
 
 import { storeBaseGet } from '@/services/common'
+import { getPageQuery } from '@/utils/utils'
 
 import { baseConfig } from '@/utils/baseConfig'
 
@@ -42,14 +43,15 @@ class StoremanagementIndex extends Component {
     // 请求表格的数据
     fetchData = () => {
         const { pagination, searchCondition } = this.state
+        const query = getPageQuery()
 
         const options = {
             t: 'list',
             index: pagination.current,
             size: pagination.pageSize,
         }
-        if (searchCondition.q) {
-            options.q = searchCondition.q
+        if (searchCondition.q || query.q) {
+            options.q = searchCondition.q || query.q
         }
         storeBaseGet(options).then(res => {
             if (res && res.errcode === 0) {
@@ -65,7 +67,13 @@ class StoremanagementIndex extends Component {
     }
 
     // 查询表单搜索
-    handleFormSearch = values => {
+    handleFormSearch = (values, newQuery) => {
+        const {
+            location: { pathname },
+            history,
+        } = this.props
+        console.log('newQuery:', newQuery, pathname)
+        history.replace(`${pathname}${newQuery}`)
         const { pagination } = this.state
 
         this.setState(
@@ -257,6 +265,7 @@ class StoremanagementIndex extends Component {
                                             onClick={() => this.handleShowDetail(storeData.storeId)}
                                             size="small"
                                             type="default"
+                                            style={{ marginBottom: '10px' }}
                                         >
                                             设置管理员
                                         </Button>

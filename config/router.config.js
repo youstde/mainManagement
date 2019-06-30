@@ -234,23 +234,6 @@ export default [
                 ],
             },
             {
-                path: '/operation',
-                name: '运营管理',
-                icon: 'container',
-                routes: [
-                    {
-                        path: '/operation/horseAd/C707297DAB4108453G',
-                        name: '走马灯广告列表',
-                        component: './Property/Classmanagement',
-                    },
-                    {
-                        path: '/operation/horseAd/2F724448AD40D0743F',
-                        name: '轮播广告列表',
-                        component: './Property/Classmanagement',
-                    },
-                ],
-            },
-            {
                 path: '/logistics',
                 name: '干线物流管理',
                 icon: 'twitter',
@@ -309,6 +292,23 @@ export default [
                     {
                         path: '/logistics/logisticsbillcompany/F5622922B41DB0C13D',
                         name: '物流公司管理',
+                        component: './Property/Classmanagement',
+                    },
+                ],
+            },
+            {
+                path: '/operation',
+                name: '运营管理',
+                icon: 'container',
+                routes: [
+                    {
+                        path: '/operation/horseAd/C707297DAB4108453G',
+                        name: '走马灯广告列表',
+                        component: './Property/Classmanagement',
+                    },
+                    {
+                        path: '/operation/horseAd/2F724448AD40D0743F',
+                        name: '轮播广告列表',
                         component: './Property/Classmanagement',
                     },
                 ],

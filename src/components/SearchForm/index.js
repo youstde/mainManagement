@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import moment from 'moment'
 import { Form, Input, Select, DatePicker, Button } from 'antd'
 import styles from './index.less'
+import { getPageQuery } from '@/utils/utils'
 
 const { RangePicker } = DatePicker
 
@@ -117,8 +118,22 @@ class SearchForm extends Component {
     // 点击按钮
     handleCustomClick = (callback = () => {}) => {
         const values = this.getFormValues()
+        const newStr = this.handleQuery(values)
+        callback(values, newStr)
+    }
 
-        callback(values)
+    handleQuery = values => {
+        const queryObj = getPageQuery()
+        const newObj = {
+            ...values,
+            ...queryObj,
+        }
+        let str = '?'
+        Object.keys(newObj).forEach(key => {
+            str += `${key}=${newObj[key]}&`
+        })
+        str = str.replace(/&$/, '')
+        return str
     }
 
     generateButton = ({ type, onClick, icon, disabled, text, key }) => (

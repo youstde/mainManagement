@@ -200,6 +200,7 @@ class GoodsSpuList extends Component {
                                             onClick={() => this.editSome(item.spuid)}
                                             size="small"
                                             type="default"
+                                            style={{ marginBottom: '10px' }}
                                         >
                                             编辑
                                         </Button>

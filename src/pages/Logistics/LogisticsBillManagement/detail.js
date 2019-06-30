@@ -7,6 +7,7 @@ import BasicTable from '@/components/BasicTable'
 
 import { purchasePost } from '@/services/common'
 import { createSignOptions } from '@/utils/utils'
+import { purchaseDetailColumns } from '@/pages/config/index'
 
 @connect(() => ({}))
 class PurchaseBillDetail extends Component {
@@ -85,61 +86,8 @@ class PurchaseBillDetail extends Component {
         return (
             <PageHeaderWrapper>
                 <BasicTable
-                    columns={[
-                        {
-                            dataIndex: 'skuid',
-                            title: 'skuID',
-                        },
-                        {
-                            dataIndex: 'name',
-                            title: 'sku品名',
-                        },
-                        {
-                            dataIndex: 'category_name',
-                            title: '品类',
-                        },
-                        {
-                            dataIndex: 'region_name',
-                            title: '产区',
-                        },
-                        {
-                            dataIndex: 'variety_name',
-                            title: '品种',
-                        },
-                        {
-                            dataIndex: 'storage_name',
-                            title: '存储情况',
-                        },
-                        {
-                            dataIndex: 'process_name',
-                            title: '加工情况',
-                        },
-                        {
-                            dataIndex: 'packing_name_a',
-                            title: '外包装',
-                        },
-                        {
-                            dataIndex: 'packing_name_b',
-                            title: '内包装',
-                        },
-                        {
-                            dataIndex: 'levels',
-                            title: '等级',
-                        },
-                        {
-                            dataIndex: 'brand_name',
-                            title: '品牌',
-                        },
-                        {
-                            dataIndex: 'specification_name',
-                            title: '规格',
-                        },
-                        {
-                            dataIndex: 'specification_value',
-                            title: '规格值',
-                        },
-                    ]}
-                    scroll={{ x: 1600 }}
+                    columns={purchaseDetailColumns}
+                    scroll={{ x: 2000 }}
                     dataSource={dataSrouce}
                     pagination={{
                         ...pagination,

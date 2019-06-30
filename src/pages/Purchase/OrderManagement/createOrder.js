@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { Component } from 'react'
 import { connect } from 'dva'
 import { Form, Input, DatePicker, Row, Col, Select, Upload, Modal, Icon, message } from 'antd'
@@ -59,6 +60,7 @@ class PurchaseCreateOrder extends Component {
 
     // 请求表格的数据
     fetchData = ids => {
+        const { form } = this.props
         const { pagination } = this.state
         goodsBaseGet({
             args: ids,
@@ -67,6 +69,11 @@ class PurchaseCreateOrder extends Component {
             index: pagination.current,
         }).then(res => {
             if (res && res.errcode === 0) {
+                const { cost_total, quantity_total } = res.additional
+                form.setFieldsValue({
+                    cost_total: cost_total || '',
+                    quantity_total: quantity_total || '',
+                })
                 this.setState({
                     tabelData: res.data,
                     pagination: {

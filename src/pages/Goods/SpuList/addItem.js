@@ -13,7 +13,13 @@ import 'braft-editor/dist/index.css'
 
 // import Button from '@/components/Button'
 
-import { configurationGet, goodsBaseGet, generalGet, goodsPost } from '@/services/common'
+import {
+    configurationGet,
+    goodsBaseGet,
+    generalGet,
+    goodsPost,
+    generalPost,
+} from '@/services/common'
 
 const { Option } = Select
 
@@ -105,18 +111,18 @@ class SpuListEdit extends PureComponent {
         })
     }
 
-    fetchAreaData = (code, cb) => {
+    fetchAreaData = (targetOption = {}, cb) => {
         const params = {
             t: 'regions',
         }
-        if (code) params.code = code
+        if (targetOption.code) params.code = targetOption.code
         generalGet(params).then(res => {
             if (res && res.errcode === 0) {
-                if (code) {
-                    cb(this.clearAreaData(res.data))
+                if (targetOption.code) {
+                    cb(this.clearAreaData(res.data, targetOption))
                 } else {
                     this.setState({
-                        CascaderOptions: this.clearAreaData(res.data),
+                        CascaderOptions: this.clearAreaData(res.data, targetOption),
                     })
                 }
             }
@@ -124,16 +130,25 @@ class SpuListEdit extends PureComponent {
     }
 
     // 清洗area的数据（格式化）
-    clearAreaData = data => {
+    clearAreaData = (data, targetOption) => {
         const { areaLevel } = this.state
         console.log('areaLevel:', areaLevel)
-        const arr = data.map(item => {
-            return {
+        const arr = []
+        if (targetOption.code) {
+            arr.push({
+                code: targetOption.code,
+                label: `全${targetOption.label}`,
+                value: targetOption.value,
+                isLeaf: true,
+            })
+        }
+        data.forEach(item => {
+            arr.push({
                 code: item.code,
                 value: item.id,
                 label: item.name,
                 isLeaf: areaLevel === 3,
-            }
+            })
         })
         return arr
     }
@@ -150,8 +165,7 @@ class SpuListEdit extends PureComponent {
         const targetOption = selectedOptions[selectedOptions.length - 1]
         targetOption.loading = true
 
-        const { code } = targetOption
-        this.fetchAreaData(code, data => {
+        this.fetchAreaData(targetOption, data => {
             targetOption.loading = false
             targetOption.children = data
             const { CascaderOptions } = this.state
@@ -186,7 +200,11 @@ class SpuListEdit extends PureComponent {
                 Object.keys(values).forEach(key => {
                     if (key === 'region_arr') {
                         // eslint-disable-next-line prefer-destructuring
-                        params.region_id = values[key][2]
+                        const regionArr = values[key] || []
+                        if (regionArr.length) {
+                            const index = regionArr.length - 1
+                            params.region_id = regionArr[index]
+                        }
                         return
                     }
                     if (key === 'pictures') {
@@ -234,6 +252,28 @@ class SpuListEdit extends PureComponent {
     handleGoBack = () => {
         const { history } = this.props
         history.goBack()
+    }
+
+    myUploadFn = param => {
+        console.log(param)
+        const formData = new FormData()
+        formData.append('files[]', param.file)
+        generalPost(
+            {
+                t: 'upload',
+            },
+            formData
+        ).then(res => {
+            if (res && res.errcode === 0) {
+                param.success({
+                    url: `${res.data.path}?x-oss-process=style/m`,
+                    meta: {
+                        id: res.request_id,
+                    },
+                })
+                param.progress(100)
+            }
+        })
     }
 
     render() {
@@ -380,6 +420,7 @@ class SpuListEdit extends PureComponent {
                             value={editorState}
                             onChange={this.handleEditorChange}
                             onSave={this.submitContent}
+                            media={{ uploadFn: this.myUploadFn }}
                         />
                     </div>
                     <Form.Item {...formItemLayoutWithOutLabel}>

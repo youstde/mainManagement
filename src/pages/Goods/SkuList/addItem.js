@@ -153,10 +153,6 @@ class SkuListAdd extends PureComponent {
                 const params = {
                     t: 'sku.save',
                     spuid: values.spuid,
-                    packing_aid: values.packing_aid,
-                    packing_bid: values.packing_bid,
-                    levels: values.levels,
-                    brand_id: values.brand_id,
                     specification_id: values.specification_id,
                     specification_value: values.specification_value,
                     pictures_same_spu: picturesSameSpu,
@@ -168,6 +164,10 @@ class SkuListAdd extends PureComponent {
                 }
                 if (!picturesSameSpu) params.pictures = JSON.stringify(values.pictures)
                 if (!describeSameSpu) params.describe = values.htmlContent
+                if (values.packing_aid) params.packing_aid = values.packing_aid
+                if (values.packing_bid) params.packing_bid = values.packing_bid
+                if (values.levels) params.levels = values.levels
+                if (values.brand_id) params.brand_id = values.brand_id
 
                 createSignOptions(params)
                 const formData = new FormData()
@@ -177,7 +177,7 @@ class SkuListAdd extends PureComponent {
                 console.log('Received values of form: ', values, htmlContent)
                 goodsPost('', formData).then(res => {
                     if (res && res.errcode === 0) {
-                        message.success('操作成功!', 2, () => {
+                        message.success('操作成功!', 1, () => {
                             history.replace('/goods/skulist')
                         })
                     }
@@ -305,8 +305,14 @@ class SkuListAdd extends PureComponent {
         }
 
         function createOption(data) {
-            const arr = data.map(item => {
-                return (
+            const arr = []
+            arr.push(
+                <Option value={undefined} key={Date.now()}>
+                    重置
+                </Option>
+            )
+            data.forEach(item => {
+                arr.push(
                     <Option value={item.id} key={item.id}>
                         {item.name}
                     </Option>
@@ -344,20 +350,24 @@ class SkuListAdd extends PureComponent {
                     <div style={{ fontSize: '20px', color: '#1ABC9C', marginBottom: '30px' }}>
                         关联SPU
                     </div>
-                    <Form.Item label="spu">
-                        {getFieldDecorator('spuid', {
-                            rules: [
-                                {
-                                    required: true,
-                                    message: '请关联spu!',
-                                },
-                            ],
-                        })(
-                            <Select onChange={this.handleSelectChange}>
-                                {createSpuOption(spuLists)}
-                            </Select>
-                        )}
-                    </Form.Item>
+                    <Row>
+                        <Col span={8}>
+                            <Form.Item label="spu">
+                                {getFieldDecorator('spuid', {
+                                    rules: [
+                                        {
+                                            required: true,
+                                            message: '请关联spu!',
+                                        },
+                                    ],
+                                })(
+                                    <Select onChange={this.handleSelectChange}>
+                                        {createSpuOption(spuLists)}
+                                    </Select>
+                                )}
+                            </Form.Item>
+                        </Col>
+                    </Row>
                     <div style={{ marginBottom: '30px' }}>
                         <span style={{ fontSize: '20px', color: '#1ABC9C' }}>商品属性</span>
                         <span style={{ fontSize: '14px', paddingLeft: '20px' }}>
@@ -401,12 +411,26 @@ class SkuListAdd extends PureComponent {
                         </Col>
                         <Col span={8}>
                             <Form.Item label="规格值">
-                                {getFieldDecorator('specification_value')(<Input />)}
+                                {getFieldDecorator('specification_value', {
+                                    rules: [
+                                        {
+                                            required: true,
+                                            message: '该项不能为空!',
+                                        },
+                                    ],
+                                })(<Input />)}
                             </Form.Item>
                         </Col>
                         <Col span={8}>
                             <Form.Item label="规格">
-                                {getFieldDecorator('specification_id')(
+                                {getFieldDecorator('specification_id', {
+                                    rules: [
+                                        {
+                                            required: true,
+                                            message: '该项不能为空!',
+                                        },
+                                    ],
+                                })(
                                     <Select onChange={this.handleSelectChange}>
                                         {createOption(specificationData)}
                                     </Select>
@@ -417,12 +441,16 @@ class SkuListAdd extends PureComponent {
                     <Row>
                         <Col span={12}>
                             <Form.Item label="一级门店加价幅度">
-                                {getFieldDecorator('priceLevel1')(<Input />)}
+                                {getFieldDecorator('priceLevel1', {
+                                    initialValue: 0,
+                                })(<Input />)}
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item label="二级门店加价幅度">
-                                {getFieldDecorator('priceLevel2')(<Input />)}
+                                {getFieldDecorator('priceLevel2', {
+                                    initialValue: 0,
+                                })(<Input />)}
                             </Form.Item>
                         </Col>
                     </Row>

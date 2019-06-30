@@ -15,7 +15,7 @@ const fetchFunction = async () => ({ data: { list: [], count: 0 }, success: true
 class GoodsStoreGoodsList extends Component {
     state = {
         searchCondition: {}, // 搜索条件
-        dataSrouce: storeGoodsListMock || [], // 表格数据
+        dataSrouce: [], // 表格数据
         pagination: {
             current: 1,
             pageSize: 10,
@@ -201,7 +201,7 @@ class GoodsStoreGoodsList extends Component {
                             title: '上下架状态',
                         },
                     ]}
-                    scroll={{ x: 1600 }}
+                    scroll={{ x: 1800 }}
                     dataSource={dataSrouce}
                     pagination={{
                         ...pagination,
