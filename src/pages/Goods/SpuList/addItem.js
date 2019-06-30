@@ -287,7 +287,7 @@ class SpuListEdit extends PureComponent {
                             rules: [
                                 {
                                     required: true,
-                                    message: 'Please input your E-mail!',
+                                    message: '该项不能为空!',
                                 },
                             ],
                         })(<Input />)}
@@ -297,7 +297,7 @@ class SpuListEdit extends PureComponent {
                             rules: [
                                 {
                                     required: true,
-                                    message: 'Please input your E-mail!',
+                                    message: '该项不能为空!',
                                 },
                             ],
                         })(
@@ -311,7 +311,7 @@ class SpuListEdit extends PureComponent {
                             rules: [
                                 {
                                     required: true,
-                                    message: 'Please input your E-mail!',
+                                    message: '该项不能为空!',
                                 },
                             ],
                         })(
@@ -342,7 +342,7 @@ class SpuListEdit extends PureComponent {
                             rules: [
                                 {
                                     required: true,
-                                    message: 'Please input your E-mail!',
+                                    message: '该项不能为空!',
                                 },
                             ],
                         })(
@@ -356,7 +356,7 @@ class SpuListEdit extends PureComponent {
                             rules: [
                                 {
                                     required: true,
-                                    message: 'Please input your E-mail!',
+                                    message: '该项不能为空!',
                                 },
                             ],
                         })(
@@ -370,7 +370,7 @@ class SpuListEdit extends PureComponent {
                             rules: [
                                 {
                                     required: true,
-                                    message: 'Please input your E-mail!',
+                                    message: '该项不能为空!',
                                 },
                             ],
                         })(<UploadImg initPictures={[]} changeBc={this.handleUploadImg} />)}

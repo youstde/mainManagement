@@ -128,6 +128,25 @@ class GoodsSkuList extends Component {
                         {
                             title: '商品图片',
                             dataIndex: 'goodsImg',
+                            render: (_, { pictures }) => {
+                                const imgArr =
+                                    pictures &&
+                                    pictures.map((item, i) => {
+                                        return (
+                                            <img
+                                                style={{
+                                                    width: '50px',
+                                                    height: '50px',
+                                                    marginRight: '3px',
+                                                }}
+                                                src={item.url}
+                                                alt=""
+                                                key={i}
+                                            />
+                                        )
+                                    })
+                                return imgArr
+                            },
                         },
                         {
                             title: 'sku品名',
@@ -190,14 +209,6 @@ class GoodsSkuList extends Component {
                                             type="default"
                                         >
                                             编辑
-                                        </Button>
-                                        <span>&nbsp;</span>
-                                        <Button
-                                            onClick={() => this.handleShowDetail(item)}
-                                            size="small"
-                                            type="default"
-                                        >
-                                            查看
                                         </Button>
                                     </div>
                                 )

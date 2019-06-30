@@ -6,7 +6,7 @@ import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 
 // mock
-import OrderMock from '../mock/order'
+// import OrderMock from '../mock/order'
 
 // import { fetchFunction } from '@/services'
 const fetchFunction = async () => ({ data: { list: [], count: 0 }, success: true })
@@ -15,7 +15,7 @@ const fetchFunction = async () => ({ data: { list: [], count: 0 }, success: true
 class StoremanagementOrder extends Component {
     state = {
         searchCondition: {}, // 搜索条件
-        dataSrouce: OrderMock || [], // 表格数据
+        dataSrouce: [], // 表格数据
         pagination: {
             current: 1,
             pageSize: 10,
@@ -118,7 +118,7 @@ class StoremanagementOrder extends Component {
                             label: '订单状态',
                             type: 'select',
                             key: 'orderState',
-                            options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
+                            options: [{ key: 0, value: '未处理' }, { key: 1, value: '已处理' }],
                         },
                         {
                             key: 'storeName',
@@ -254,7 +254,7 @@ class StoremanagementOrder extends Component {
                             buttons: [{ text: '查看' }, { text: '编辑' }],
                         },
                     ]}
-                    scroll={{ x: 1900 }}
+                    scroll={{ x: 2800 }}
                     dataSource={dataSrouce}
                     pagination={{
                         ...pagination,

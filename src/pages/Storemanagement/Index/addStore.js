@@ -32,20 +32,23 @@ class AddStore extends PureComponent {
 
     handleSubmit = e => {
         e.preventDefault()
+        const { storeItemData } = this.props
         const { form, handleCancel } = this.props
         form.validateFields((err, values) => {
             console.log('values:', values)
             if (!err) {
-                storeBaseGet({
+                const params = {
                     t: 'save',
                     mobile: values.mobile,
                     name: values.name,
                     level: values.level,
                     contacter: values.contacter,
                     address: values.address,
-                }).then(res => {
+                }
+                if (storeItemData.length) params.id = storeItemData.id
+                storeBaseGet(params).then(res => {
                     if (res && res.errcode === 0) {
-                        message.success('添加成功!', 2)
+                        message.success('操作成功!', 2)
                         handleCancel()
                     }
                 })
@@ -56,9 +59,10 @@ class AddStore extends PureComponent {
     render() {
         const {
             form: { getFieldDecorator },
+            storeItemData,
         } = this.props
         const { handleSubmit } = this
-
+        console.log('storeItemData:', storeItemData)
         const formItemLayout = {
             labelCol: {
                 xs: { span: 16 },
@@ -89,6 +93,7 @@ class AddStore extends PureComponent {
                 <Form {...formItemLayout} onSubmit={handleSubmit}>
                     <Form.Item label="门店名称">
                         {getFieldDecorator('name', {
+                            initialValue: storeItemData.name || '',
                             rules: [
                                 {
                                     required: true,
@@ -99,6 +104,7 @@ class AddStore extends PureComponent {
                     </Form.Item>
                     <Form.Item label="门店地址">
                         {getFieldDecorator('address', {
+                            initialValue: storeItemData.address || '',
                             rules: [
                                 {
                                     required: true,
@@ -109,6 +115,7 @@ class AddStore extends PureComponent {
                     </Form.Item>
                     <Form.Item label="门店负责人">
                         {getFieldDecorator('contacter', {
+                            initialValue: storeItemData.contacter || '',
                             rules: [
                                 {
                                     required: true,
@@ -119,6 +126,7 @@ class AddStore extends PureComponent {
                     </Form.Item>
                     <Form.Item label="门店负责人手机">
                         {getFieldDecorator('mobile', {
+                            initialValue: storeItemData.mobile || '',
                             rules: [
                                 {
                                     required: true,
@@ -132,6 +140,7 @@ class AddStore extends PureComponent {
                     </Form.Item>
                     <Form.Item label="门店类型">
                         {getFieldDecorator('level', {
+                            initialValue: storeItemData.level ? `${storeItemData.level}` : '',
                             rules: [
                                 {
                                     required: true,

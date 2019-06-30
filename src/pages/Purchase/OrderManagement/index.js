@@ -115,7 +115,17 @@ class PurchaseOrderManagement extends Component {
     }
 
     onSelectChange = selectedRowKeys => {
-        this.setState({ selectedRowKeys })
+        const { dataSrouce } = this.state
+        let tag = true
+        const index = selectedRowKeys.length - 1
+        dataSrouce.forEach(item => {
+            if (item.id === selectedRowKeys[index]) {
+                if (item.status !== 0) tag = false
+            }
+        })
+        if (tag) {
+            this.setState({ selectedRowKeys })
+        }
         console.log(selectedRowKeys)
     }
 

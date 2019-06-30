@@ -22,6 +22,7 @@ class StoremanagementIndex extends Component {
     }
 
     state = {
+        storeItemData: null,
         activeStoreId: '',
         visibleModal: false,
         visibleAddStoreModal: false,
@@ -166,8 +167,16 @@ class StoremanagementIndex extends Component {
     handleAddStoreCancel = () => {
         this.setState({
             visibleAddStoreModal: false,
+            storeItemData: null,
         })
         this.fetchData()
+    }
+
+    handleShowEdit = storeItemData => {
+        this.setState({
+            storeItemData,
+            visibleAddStoreModal: true,
+        })
     }
 
     render() {
@@ -177,6 +186,7 @@ class StoremanagementIndex extends Component {
             visibleModal,
             visibleAddStoreModal,
             activeStoreId,
+            storeItemData,
         } = this.state
         const { toggleState, handleCancel } = this
 
@@ -240,20 +250,28 @@ class StoremanagementIndex extends Component {
                         },
                         {
                             type: 'oprate',
-                            render: (_, { id: storeId }) => {
+                            render: (_, storeData) => {
                                 return (
                                     <div>
                                         <Button
-                                            onClick={() => this.handleShowDetail(storeId)}
+                                            onClick={() => this.handleShowDetail(storeData.storeId)}
                                             size="small"
                                             type="default"
                                         >
                                             设置管理员
                                         </Button>
                                         <span>&nbsp;</span>
+                                        <Button
+                                            onClick={() => this.handleShowEdit(storeData)}
+                                            size="small"
+                                            type="default"
+                                        >
+                                            编辑
+                                        </Button>
+                                        <span>&nbsp;</span>
                                         <Popconfirm
                                             title="确定删除该门店吗?"
-                                            onConfirm={() => this.deleteItem(storeId)}
+                                            onConfirm={() => this.deleteItem(storeData.storeId)}
                                             okText="确定"
                                             cancelText="取消"
                                         >
@@ -282,13 +300,16 @@ class StoremanagementIndex extends Component {
                     <SetAdmin storeId={activeStoreId} handleCancel={handleCancel} />
                 </Modal>
                 <Modal
-                    title="新增门店"
+                    title={storeItemData ? '编辑' : '新增门店'}
                     destroyOnClose
                     visible={visibleAddStoreModal}
                     onCancel={this.handleAddStoreCancel}
                     footer={null}
                 >
-                    <AddStore handleCancel={this.handleAddStoreCancel} />
+                    <AddStore
+                        storeItemData={storeItemData || []}
+                        handleCancel={this.handleAddStoreCancel}
+                    />
                 </Modal>
             </PageHeaderWrapper>
         )

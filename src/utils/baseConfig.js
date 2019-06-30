@@ -5,9 +5,9 @@ export const baseConfig = {
         '2': '门店',
     },
     mch_levels: {
-        '1': '一级',
-        '2': '二级',
-        '3': '三级',
+        1: '一级',
+        2: '二级',
+        // '3': '三级',
     },
     status: {
         Delete: -1,

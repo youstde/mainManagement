@@ -514,7 +514,7 @@ class SkuListEdit extends PureComponent {
                                 rules: [
                                     {
                                         required: true,
-                                        message: 'Please input your E-mail!',
+                                        message: '该项不能为空!',
                                     },
                                 ],
                             })(

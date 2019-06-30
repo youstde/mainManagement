@@ -444,7 +444,7 @@ class SkuListAdd extends PureComponent {
                                 rules: [
                                     {
                                         required: true,
-                                        message: 'Please input your E-mail!',
+                                        message: '该项不能为空!',
                                     },
                                 ],
                             })(<UploadImg initPictures={[]} changeBc={this.handleUploadImg} />)}

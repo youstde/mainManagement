@@ -134,10 +134,6 @@ class LogisticsBillManagement extends Component {
                 <BasicTable
                     columns={[
                         {
-                            title: '批次号',
-                            dataIndex: 'id',
-                        },
-                        {
                             title: '物流单号',
                             dataIndex: 'serial_no',
                         },

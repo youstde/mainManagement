@@ -1,9 +1,11 @@
 import React, { Component } from 'react'
 import { connect } from 'dva'
-import { Form, Input, Button, message, DatePicker } from 'antd'
+import { Form, Input, Button, message, DatePicker, Select } from 'antd'
 import moment from 'moment'
 
 import { configurationGet } from '@/services/common'
+
+const { Option } = Select
 
 @connect(() => ({}))
 class EditItem extends Component {
@@ -73,13 +75,15 @@ class EditItem extends Component {
         })
     }
 
+    handleSelectChange = () => {}
+
     render() {
         const {
             form: { getFieldDecorator },
             fields,
         } = this.props
         const { item } = this.state
-        const { onDateOk } = this
+        const { onDateOk, handleSelectChange } = this
 
         const dateFormat = 'YYYY-MM-DD hh:mm:ss'
 
@@ -106,6 +110,16 @@ class EditItem extends Component {
             },
         }
 
+        function createSelectOption(selects) {
+            const arr = selects.map(one => {
+                return (
+                    <Option value={one.value} key={one.value}>
+                        {one.text}
+                    </Option>
+                )
+            })
+            return arr
+        }
         function createFormItem() {
             const arr = fields.map(field => {
                 switch (field.field_type) {
@@ -130,6 +144,24 @@ class EditItem extends Component {
                                             onDateOk(value, field.field_name)
                                         }}
                                     />
+                                )}
+                            </Form.Item>
+                        )
+                    case 'select':
+                        return (
+                            <Form.Item label={field.show_name}>
+                                {getFieldDecorator(field.field_name, {
+                                    initialValue: item[field.field_name] || field.default_value,
+                                    rules: [
+                                        {
+                                            required: true,
+                                            message: '此项不能为空!',
+                                        },
+                                    ],
+                                })(
+                                    <Select onChange={handleSelectChange}>
+                                        {createSelectOption(field.selects || [])}
+                                    </Select>
                                 )}
                             </Form.Item>
                         )

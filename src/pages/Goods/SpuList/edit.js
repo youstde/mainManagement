@@ -325,7 +325,7 @@ class SpuListEdit extends PureComponent {
                             rules: [
                                 {
                                     required: true,
-                                    message: 'Please input your E-mail!',
+                                    message: '该项不能为空!',
                                 },
                             ],
                         })(<Input />)}
@@ -336,7 +336,7 @@ class SpuListEdit extends PureComponent {
                             rules: [
                                 {
                                     required: true,
-                                    message: 'Please input your E-mail!',
+                                    message: '该项不能为空!',
                                 },
                             ],
                         })(
@@ -351,7 +351,7 @@ class SpuListEdit extends PureComponent {
                             rules: [
                                 {
                                     required: true,
-                                    message: 'Please input your E-mail!',
+                                    message: '该项不能为空!',
                                 },
                             ],
                         })(
@@ -362,7 +362,8 @@ class SpuListEdit extends PureComponent {
                     </Form.Item>
                     <div style={{ textAlign: 'center' }}>
                         默认产区：{dataSource.region_lv1}/{dataSource.region_lv2}/
-                        {dataSource.region_lv3}（编辑时请重新手动选择）
+                        {dataSource.region_lv3}（
+                        <strong>编辑时请重新手动选择,可以和以前的一样</strong>）
                     </div>
                     <Form.Item label="产区">
                         {getFieldDecorator('region_arr', {
@@ -387,7 +388,7 @@ class SpuListEdit extends PureComponent {
                             rules: [
                                 {
                                     required: true,
-                                    message: 'Please input your E-mail!',
+                                    message: '该项不能为空!',
                                 },
                             ],
                         })(
@@ -402,7 +403,7 @@ class SpuListEdit extends PureComponent {
                             rules: [
                                 {
                                     required: true,
-                                    message: 'Please input your E-mail!',
+                                    message: '该项不能为空!',
                                 },
                             ],
                         })(

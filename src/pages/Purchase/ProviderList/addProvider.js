@@ -16,7 +16,7 @@ class AddProvider extends PureComponent {
 
     componentDidMount() {
         const { data } = this.props
-        console.log(data)
+        console.log('data:', data)
         // this.fetchOrderDetail()
     }
 
@@ -79,7 +79,7 @@ class AddProvider extends PureComponent {
                             {getFieldDecorator(field.field_name, {
                                 initialValue: data[field.field_name]
                                     ? data[field.field_name].split(',')
-                                    : null,
+                                    : [],
                                 rules: [
                                     {
                                         required: true,
@@ -118,7 +118,7 @@ class AddProvider extends PureComponent {
                                     message: '此项不能为空!',
                                 },
                             ],
-                        })(<Input disabled={data.ssid && field.unmodifiable === 1} />)}
+                        })(<Input disabled={field.unmodifiable === 1} />)}
                     </Form.Item>
                 )
             })
