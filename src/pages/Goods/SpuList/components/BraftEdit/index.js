@@ -33,8 +33,17 @@ class BraftEdit extends Component {
         this.setState({ editorState })
     }
 
+    myUploadFn = params => {
+        console.log(params)
+    }
+
     render() {
         const { editorState } = this.state
+        const editProps = {
+            media: {
+                uploadFn: this.uploadFn,
+            },
+        }
 
         return (
             <div>
@@ -42,6 +51,7 @@ class BraftEdit extends Component {
                     value={editorState}
                     onChange={this.handleEditorChange}
                     onSave={this.submitContent}
+                    {...editProps}
                 />
             </div>
         )

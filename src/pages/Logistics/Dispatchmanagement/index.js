@@ -1,19 +1,44 @@
+/* eslint-disable camelcase */
+/* eslint-disable func-names */
+/* eslint-disable no-underscore-dangle */
 import React, { Component } from 'react'
 import { connect } from 'dva'
+import { message } from 'antd'
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper'
 import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
 
-// import { fetchFunction } from '@/services'
-const fetchFunction = async () => ({ data: { list: [], count: 0 }, success: true })
+import { deliversPost, goodsBaseGet, storeBaseGet } from '@/services/common'
+import { createSignOptions, clearDate } from '@/utils/utils'
 
-@connect(() => ({}))
+function inject_unount(target) {
+    // 改装componentWillUnmount，销毁的时候记录一下
+    const next = target.prototype.componentWillUnmount
+    target.prototype.componentWillUnmount = function() {
+        // eslint-disable-next-line prefer-rest-params
+        if (next) next.call(this, ...arguments)
+        this.unmount = true
+    }
+    // 对setState的改装，setState查看目前是否已经销毁
+    const { setState } = target.prototype
+    target.prototype.setState = function() {
+        console.log(this.unmount)
+        if (this.unmount) return
+        // eslint-disable-next-line prefer-rest-params
+        setState.call(this, ...arguments)
+    }
+}
+
+@inject_unount
 class LogisticsDispatchmanagement extends Component {
     state = {
+        selectedRowKeys: [],
         searchCondition: {}, // 搜索条件
         dataSrouce: [], // 表格数据
+        skuData: [],
+        storeData: [],
         pagination: {
             current: 1,
             pageSize: 10,
@@ -23,26 +48,58 @@ class LogisticsDispatchmanagement extends Component {
 
     componentDidMount() {
         this.fetchData()
+        this.fetchSkuData()
+        this.fetchStoreData()
     }
 
-    // 请求表格的数据
-    fetchData = (parmas = {}) => {
-        const { pageNum, ...params } = parmas
-        const { pagination, searchCondition } = this.state
+    componentWillUnmount() {}
 
-        fetchFunction({
-            pageSize: pagination.pageSize,
-            pageNum: pageNum || pagination.current,
-            ...searchCondition,
-            ...params,
-        }).then(res => {
-            if (res && res.success) {
+    // 请求表格的数据
+    fetchData = () => {
+        const { pagination, searchCondition } = this.state
+        const params = {
+            t: 'orders',
+            index: pagination.current,
+            size: pagination.pageSize,
+        }
+        if (searchCondition.skuid) params.skuid = searchCondition.skuid
+        if (searchCondition.date) params.date = clearDate(searchCondition.date)
+        if (searchCondition.mch_id) params.mch_id = searchCondition.mch_id
+        createSignOptions(params)
+        const formData = new FormData()
+        Object.keys(params).forEach(key => {
+            formData.append(key, params[key])
+        })
+        deliversPost('', formData).then(res => {
+            if (res && res.errcode === 0) {
                 this.setState({
-                    dataSrouce: res.data.list,
+                    dataSrouce: res.data,
                     pagination: {
                         ...pagination,
-                        total: res.data.count,
+                        total: res.pages.count,
                     },
+                })
+            }
+        })
+    }
+
+    fetchSkuData = () => {
+        goodsBaseGet({
+            t: 'sku.list',
+        }).then(res => {
+            this.setState({
+                skuData: res.data,
+            })
+        })
+    }
+
+    fetchStoreData = () => {
+        storeBaseGet({
+            t: 'list',
+        }).then(res => {
+            if (res && res.errcode === 0) {
+                this.setState({
+                    storeData: res.data,
                 })
             }
         })
@@ -88,8 +145,68 @@ class LogisticsDispatchmanagement extends Component {
         )
     }
 
+    onSelectChange = selectedRowKeys => {
+        const { dataSrouce } = this.state
+        let tag = true
+        const index = selectedRowKeys.length - 1
+        dataSrouce.forEach(item => {
+            if (item.id === selectedRowKeys[index]) {
+                if (item.status !== 0) tag = false
+            }
+        })
+        if (tag) {
+            this.setState({ selectedRowKeys })
+        }
+        console.log(selectedRowKeys)
+    }
+
+    handleShowDetail = serialNo => {
+        const { history } = this.props
+        history.push(`/logistics/dispatchmanagement/detail?serialNo=${serialNo}`)
+    }
+
+    handleShowcreate = () => {
+        const { selectedRowKeys } = this.state
+        const { history } = this.props
+        if (selectedRowKeys.length) {
+            let str = ''
+            selectedRowKeys.forEach(item => {
+                str += `${item}_`
+            })
+            str = str.replace(/_$/, '')
+            history.push(`/logistics/dispatchmanagement/create?ids=${str}`)
+        } else {
+            message.warning('请勾选需要生成物流单的发货订单!')
+        }
+    }
+
     render() {
-        const { dataSrouce, pagination } = this.state
+        const { dataSrouce, pagination, selectedRowKeys, skuData, storeData } = this.state
+        const rowSelection = {
+            selectedRowKeys,
+            onChange: this.onSelectChange,
+        }
+
+        function createSkuOptions() {
+            const data = skuData || []
+            const arr = data.map(item => {
+                return {
+                    key: item.skuid,
+                    value: item.name,
+                }
+            })
+            return arr
+        }
+
+        function createOptions(data) {
+            const arr = data.map(item => {
+                return {
+                    key: item.id,
+                    value: item.name,
+                }
+            })
+            return arr
+        }
 
         return (
             <PageHeaderWrapper>
@@ -97,20 +214,20 @@ class LogisticsDispatchmanagement extends Component {
                     data={[
                         {
                             label: ' sku品名',
-                            type: 'input',
-                            key: 'inputKey',
+                            type: 'select',
+                            key: 'skuid',
+                            options: createSkuOptions(),
                         },
                         {
                             label: '日期',
                             type: 'datepicker',
-                            options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
-                            key: 'selectKey',
+                            key: 'date',
                         },
                         {
                             label: '门店',
                             type: 'select',
-                            key: 'dateKey',
-                            options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
+                            key: 'mch_id',
+                            options: createOptions(storeData),
                         },
                     ]}
                     buttonGroup={[
@@ -119,86 +236,58 @@ class LogisticsDispatchmanagement extends Component {
                     ]}
                 />
                 <div style={{ textAlign: 'right', paddingBottom: '10px' }}>
-                    <Button onClick={() => this.handleShowEdit()} size="small" type="default">
+                    <Button onClick={() => this.handleShowcreate()} size="small" type="default">
                         生成物流单
                     </Button>
                 </div>
                 <BasicTable
                     columns={[
                         {
-                            title: '发货地（供应商名称)',
-                            dataIndex: 'col1',
+                            title: '采购供应商',
+                            dataIndex: 'supplier_name',
                         },
                         {
-                            title: '收货地（门店名称）',
-                            dataIndex: 'col2',
+                            title: '订货门店名称',
+                            dataIndex: 'mch_name',
                         },
                         {
-                            title: 'skuID',
-                            dataIndex: 'amount',
-                            type: 'amount',
-                        },
-                        {
-                            title: 'sku品名',
-                            dataIndex: 'datecol',
-                            type: 'date',
-                        },
-                        {
-                            dataIndex: 'key-0',
-                            title: '品类',
-                        },
-                        {
-                            dataIndex: 'key-1',
-                            title: '产区',
-                        },
-                        {
-                            dataIndex: 'key-2',
-                            title: '品种',
-                        },
-                        {
-                            dataIndex: 'key-3',
-                            title: '存储情况',
-                        },
-                        {
-                            dataIndex: 'key-4',
-                            title: '加工情况',
-                        },
-                        {
-                            dataIndex: 'key-5',
-                            title: '内包装',
-                        },
-                        {
-                            dataIndex: 'key-6',
-                            title: '外包装',
-                        },
-                        {
-                            dataIndex: 'key-7',
-                            title: '门店订货数量',
-                        },
-                        {
-                            dataIndex: 'key-8',
-                            title: '实际采购数量',
-                        },
-                        {
-                            dataIndex: 'key-9',
+                            dataIndex: 'buy_date',
                             title: '采购日期',
                         },
                         {
-                            dataIndex: 'key-10',
+                            dataIndex: 'buyer',
                             title: '采购人员',
                         },
                         {
-                            dataIndex: 'key-11',
                             title: '物流状态',
+                            render: (_, { status }) => {
+                                let text = '未处理'
+                                if (status) text = '已处理'
+                                return <span>{text}</span>
+                            },
                         },
                         {
-                            fixed: 'right',
+                            // fixed: 'right',
                             type: 'oprate',
-                            buttons: [{ text: '查看详情' }, { text: '编辑' }],
+                            render: (_, { serial_no: serialNo }) => {
+                                return (
+                                    <div>
+                                        <Button
+                                            onClick={() => this.handleShowDetail(serialNo)}
+                                            size="small"
+                                            type="default"
+                                        >
+                                            查看详情
+                                        </Button>
+                                    </div>
+                                )
+                            },
                         },
                     ]}
-                    scroll={{ x: 2100 }}
+                    // scroll={{ x: 2100 }}
+                    rowKey={record => record.id}
                     dataSource={dataSrouce}
+                    rowSelection={rowSelection}
                     pagination={{
                         ...pagination,
                         onChange: this.handleChangePage,

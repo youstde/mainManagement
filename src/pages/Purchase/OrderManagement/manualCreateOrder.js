@@ -366,7 +366,14 @@ class PurchaseManualCreateOrder extends Component {
                         </Col>
                         <Col span={8}>
                             <Form.Item label="采购总成本">
-                                {getFieldDecorator('cost_total')(
+                                {getFieldDecorator('cost_total', {
+                                    rules: [
+                                        {
+                                            required: true,
+                                            message: '请在表格中填写采购成本!',
+                                        },
+                                    ],
+                                })(
                                     <Input
                                         readOnly
                                         type="number"
@@ -391,7 +398,14 @@ class PurchaseManualCreateOrder extends Component {
                     <Row gutter={24}>
                         <Col span={8}>
                             <Form.Item label="采购总件数">
-                                {getFieldDecorator('quantity_total')(
+                                {getFieldDecorator('quantity_total', {
+                                    rules: [
+                                        {
+                                            required: true,
+                                            message: '请在表格中填写采购件数!',
+                                        },
+                                    ],
+                                })(
                                     <Input
                                         readOnly
                                         type="number"

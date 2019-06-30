@@ -6,7 +6,7 @@ import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
 
-import { deliversPost } from '@/services/common'
+import { deliversPost, goodsBaseGet, configurationGet, storeBaseGet } from '@/services/common'
 import { createSignOptions, clearDate } from '@/utils/utils'
 
 @connect(() => ({}))
@@ -14,6 +14,10 @@ class PurchaseDispatchbillList extends Component {
     state = {
         searchCondition: {}, // 搜索条件
         dataSrouce: [], // 表格数据
+        skuData: [],
+        storeData: [],
+        providerCid: 'A2CDF5CDE38BEFEB3E',
+        providerData: [],
         pagination: {
             current: 1,
             pageSize: 10,
@@ -23,6 +27,9 @@ class PurchaseDispatchbillList extends Component {
 
     componentDidMount() {
         this.fetchData()
+        this.fetchSkuData()
+        this.fetchProviderData()
+        this.fetchStoreData()
     }
 
     // 请求表格的数据
@@ -51,6 +58,42 @@ class PurchaseDispatchbillList extends Component {
                         ...pagination,
                         total: res.pages.count,
                     },
+                })
+            }
+        })
+    }
+
+    fetchSkuData = () => {
+        goodsBaseGet({
+            t: 'sku.list',
+        }).then(res => {
+            this.setState({
+                skuData: res.data,
+            })
+        })
+    }
+
+    fetchProviderData = () => {
+        const { providerCid } = this.state
+        configurationGet({
+            t: 'values',
+            cid: providerCid,
+        }).then(res => {
+            if (res && res.errcode === 0) {
+                this.setState({
+                    providerData: res.data[providerCid],
+                })
+            }
+        })
+    }
+
+    fetchStoreData = () => {
+        storeBaseGet({
+            t: 'list',
+        }).then(res => {
+            if (res && res.errcode === 0) {
+                this.setState({
+                    storeData: res.data,
                 })
             }
         })
@@ -102,7 +145,27 @@ class PurchaseDispatchbillList extends Component {
     }
 
     render() {
-        const { dataSrouce, pagination } = this.state
+        const { dataSrouce, pagination, skuData, providerData, storeData } = this.state
+
+        function createSkuOptions() {
+            const arr = skuData.map(item => {
+                return {
+                    key: item.skuid,
+                    value: item.name,
+                }
+            })
+            return arr
+        }
+
+        function createOptions(data) {
+            const arr = data.map(item => {
+                return {
+                    key: item.id,
+                    value: item.name,
+                }
+            })
+            return arr
+        }
 
         return (
             <PageHeaderWrapper>
@@ -111,8 +174,8 @@ class PurchaseDispatchbillList extends Component {
                         {
                             label: ' sku品名',
                             type: 'select',
-                            options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
-                            key: 'skuname',
+                            options: createSkuOptions(skuData),
+                            key: 'skuid',
                         },
                         {
                             label: '日期',
@@ -123,19 +186,19 @@ class PurchaseDispatchbillList extends Component {
                             label: '状态',
                             type: 'select',
                             key: 'status',
-                            options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
+                            options: [{ key: 0, value: '未处理' }, { key: 1, value: '已处理' }],
                         },
                         {
-                            key: 'provider',
+                            key: 'supplier_id',
                             label: '供应商',
                             type: 'select',
-                            options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
+                            options: createOptions(providerData || []),
                         },
                         {
-                            key: 'store',
+                            key: 'mch_id',
                             label: '订货门店',
                             type: 'select',
-                            options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
+                            options: createOptions(storeData || []),
                         },
                     ]}
                     buttonGroup={[
@@ -153,60 +216,6 @@ class PurchaseDispatchbillList extends Component {
                             title: '订货门店名称',
                             dataIndex: 'mch_name',
                         },
-                        // {
-                        //     title: '门店订货数量',
-                        //     dataIndex: 'amount',
-                        //     type: 'amount',
-                        // },
-                        // {
-                        //     title: '日期',
-                        //     dataIndex: 'datecol',
-                        //     type: 'date',
-                        // },
-                        // {
-                        //     dataIndex: 'key-0',
-                        //     title: '实际采购数量',
-                        // },
-                        // {
-                        //     dataIndex: 'key-1',
-                        //     title: 'skuid',
-                        // },
-                        // {
-                        //     dataIndex: 'key-2',
-                        //     title: ' sku品名',
-                        // },
-                        // {
-                        //     dataIndex: 'key-3',
-                        //     title: '品类',
-                        // },
-                        // {
-                        //     dataIndex: 'key-4',
-                        //     title: '产区',
-                        // },
-                        // {
-                        //     dataIndex: 'key-5',
-                        //     title: '品种',
-                        // },
-                        // {
-                        //     dataIndex: 'key-6',
-                        //     title: '存储情况',
-                        // },
-                        // {
-                        //     dataIndex: 'key-7',
-                        //     title: '加工情况',
-                        // },
-                        // {
-                        //     dataIndex: 'key-8',
-                        //     title: '内包装',
-                        // },
-                        // {
-                        //     dataIndex: 'key-9',
-                        //     title: '外包装',
-                        // },
-                        // {
-                        //     dataIndex: 'key-10',
-                        //     title: '实际发货数量',
-                        // },
                         {
                             dataIndex: 'buy_date',
                             title: '采购日期',

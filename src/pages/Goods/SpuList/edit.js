@@ -2,8 +2,7 @@ import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'dva'
 import { Form, Input, Select, Cascader, message, Button } from 'antd'
 
-import { createSign } from '@/utils/utils'
-import md5 from 'md5'
+import { createSignOptions } from '@/utils/utils'
 
 import UploadImg from './components/UploadImg'
 // 引入编辑器组件
@@ -13,7 +12,13 @@ import 'braft-editor/dist/index.css'
 
 // import Button from '@/components/Button'
 
-import { configurationGet, goodsBaseGet, generalGet, goodsPost } from '@/services/common'
+import {
+    configurationGet,
+    goodsBaseGet,
+    generalGet,
+    goodsPost,
+    generalPost,
+} from '@/services/common'
 
 const { Option } = Select
 
@@ -225,10 +230,10 @@ class SpuListEdit extends PureComponent {
                     }
                     params[key] = values[key]
                 })
-                const newOptions = this.createSignOptions(params)
+                createSignOptions(params)
                 const formData = new FormData()
-                Object.keys(newOptions).forEach(key => {
-                    formData.append(key, newOptions[key])
+                Object.keys(params).forEach(key => {
+                    formData.append(key, params[key])
                 })
                 console.log('Received values of form: ', values, htmlContent)
                 goodsPost('', formData).then(res => {
@@ -241,28 +246,31 @@ class SpuListEdit extends PureComponent {
         })
     }
 
-    createSignOptions = params => {
-        const uuId = localStorage.getItem('uuId')
-        if (uuId) {
-            params.sk = uuId
-        }
-        const userInfoStr = localStorage.getItem('user_info')
-        let localUk = ''
-        if (userInfoStr) {
-            const userInfo = JSON.parse(userInfoStr)
-            localUk = userInfo.uk
-        }
-        params.uk = localUk
-        params.ver = '1.0.0'
-        params.ts = Date.parse(new Date().toUTCString()) / 1000
-
-        params.sign = md5(createSign(params))
-        return params
-    }
-
     handleGoBack = () => {
         const { history } = this.props
         history.goBack()
+    }
+
+    myUploadFn = param => {
+        console.log(param)
+        const formData = new FormData()
+        formData.append('files[]', param.file)
+        generalPost(
+            {
+                t: 'upload',
+            },
+            formData
+        ).then(res => {
+            if (res && res.errcode === 0) {
+                param.success({
+                    url: `${res.data.path}?x-oss-process=style/m`,
+                    meta: {
+                        id: res.request_id,
+                    },
+                })
+                param.progress(100)
+            }
+        })
     }
 
     render() {
@@ -424,6 +432,7 @@ class SpuListEdit extends PureComponent {
                             value={editorState}
                             onChange={this.handleEditorChange}
                             onSave={this.submitContent}
+                            media={{ uploadFn: this.myUploadFn }}
                         />
                     </div>
                     <Form.Item {...formItemLayoutWithOutLabel}>

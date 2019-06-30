@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'dva'
-import { Form, Input, Button, message } from 'antd'
+import { Form, Input, Button, message, DatePicker } from 'antd'
+import moment from 'moment'
 
 import { configurationGet } from '@/services/common'
 
@@ -20,17 +21,28 @@ class EditItem extends Component {
 
     handleSubmit = e => {
         e.preventDefault()
-        const { form, cancelBc, pageConfig, item } = this.props
+        const { form, cancelBc, pageConfig, item, fields } = this.props
         form.validateFieldsAndScroll((err, values) => {
             if (!err) {
                 console.log('Received values of form: ', values)
-                configurationGet({
+                const params = {
                     t: 'save',
                     id: item.id || 0,
                     cid: pageConfig.cid,
-                    name: values.name,
-                    ssid: values.ssid,
-                }).then(res => {
+                    // name: values.name,
+                    // ssid: values.ssid,
+                }
+                fields.forEach(field => {
+                    const key = field.field_name
+                    if (values[key] !== undefined) {
+                        if (field.field_type === 'date') {
+                            params[key] = this.clearDate(values[key])
+                        } else {
+                            params[key] = values[key]
+                        }
+                    }
+                })
+                configurationGet(params).then(res => {
                     if (res && res.errcode === 0) {
                         message.success('操作成功!', 2)
                     }
@@ -40,12 +52,36 @@ class EditItem extends Component {
         })
     }
 
+    clearDate = date => {
+        const newDate = new Date(date)
+        const year = newDate.getFullYear()
+        let month = newDate.getMonth() + 1
+        let day = newDate.getDate()
+        const hour = newDate.getHours() < 10 ? `0${newDate.getHours()}` : newDate.getHours()
+        const minute = newDate.getMinutes() < 10 ? `0${newDate.getMinutes()}` : newDate.getMinutes()
+        const second = newDate.getSeconds() < 10 ? `0${newDate.getSeconds()}` : newDate.getSeconds()
+        month = month < 10 ? `0${month}` : month
+        day = day < 10 ? `0${day}` : day
+
+        return `${year}-${month}-${day} ${hour}:${minute}:${second}`
+    }
+
+    onDateOk = (value, fieldName) => {
+        const { form } = this.props
+        form.setFieldsValue({
+            [fieldName]: value,
+        })
+    }
+
     render() {
         const {
             form: { getFieldDecorator },
             fields,
         } = this.props
         const { item } = this.state
+        const { onDateOk } = this
+
+        const dateFormat = 'YYYY-MM-DD hh:mm:ss'
 
         const formItemLayout = {
             labelCol: {
@@ -72,19 +108,51 @@ class EditItem extends Component {
 
         function createFormItem() {
             const arr = fields.map(field => {
-                return (
-                    <Form.Item label={field.show_name}>
-                        {getFieldDecorator(field.field_name, {
-                            initialValue: item[field.field_name] || field.default_value,
-                            rules: [
-                                {
-                                    required: true,
-                                    message: '此项不能为空!',
-                                },
-                            ],
-                        })(<Input placeholder={field.placeholder} />)}
-                    </Form.Item>
-                )
+                switch (field.field_type) {
+                    case 'date':
+                        return (
+                            <Form.Item label={field.show_name}>
+                                {getFieldDecorator(field.field_name, {
+                                    initialValue: item[field.field_name]
+                                        ? moment(item[field.field_name], dateFormat)
+                                        : '',
+                                    rules: [
+                                        {
+                                            required: true,
+                                            message: '此项不能为空!',
+                                        },
+                                    ],
+                                })(
+                                    <DatePicker
+                                        showTime
+                                        placeholder={field.placeholder || '请选择时间'}
+                                        onOk={value => {
+                                            onDateOk(value, field.field_name)
+                                        }}
+                                    />
+                                )}
+                            </Form.Item>
+                        )
+                    default:
+                        return (
+                            <Form.Item label={field.show_name}>
+                                {getFieldDecorator(field.field_name, {
+                                    initialValue: item[field.field_name] || field.default_value,
+                                    rules: [
+                                        {
+                                            required: true,
+                                            message: '此项不能为空!',
+                                        },
+                                    ],
+                                })(
+                                    <Input
+                                        disabled={field.unmodifiable === 1}
+                                        placeholder={field.placeholder}
+                                    />
+                                )}
+                            </Form.Item>
+                        )
+                }
             })
             return arr
         }

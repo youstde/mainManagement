@@ -159,11 +159,6 @@ export default [
                         name: '轮播广告列表',
                         component: './Property/Classmanagement',
                     },
-                    {
-                        path: '/property/cultivarmanagement/C707297DAB4108453G',
-                        name: '走马灯文字广告',
-                        component: './Property/Classmanagement',
-                    },
                 ],
             },
             {
@@ -187,14 +182,12 @@ export default [
                         path: '/purchase/createorder',
                         name: '通过勾选生成采购单',
                         hideInMenu: true,
-                        temp: true,
                         component: './Purchase/OrderManagement/createOrder.js',
                     },
                     {
                         path: '/purchase/manualcreateorder',
                         name: '手动生成采购单',
                         hideInMenu: true,
-                        temp: true,
                         component: './Purchase/OrderManagement/manualCreateOrder.js',
                     },
                     {
@@ -241,6 +234,23 @@ export default [
                 ],
             },
             {
+                path: '/operation',
+                name: '运营管理',
+                icon: 'container',
+                routes: [
+                    {
+                        path: '/operation/horseAd/C707297DAB4108453G',
+                        name: '走马灯广告列表',
+                        component: './Property/Classmanagement',
+                    },
+                    {
+                        path: '/operation/horseAd/2F724448AD40D0743F',
+                        name: '轮播广告列表',
+                        component: './Property/Classmanagement',
+                    },
+                ],
+            },
+            {
                 path: '/logistics',
                 name: '干线物流管理',
                 icon: 'twitter',
@@ -252,7 +262,7 @@ export default [
                             {
                                 path: '/logistics/companymanagement/list',
                                 name: '干线物流公司列表',
-                                component: './Logistics/CompanyManagement',
+                                component: './Logistics/CompanyManagement/list',
                             },
                         ],
                     },
@@ -263,7 +273,19 @@ export default [
                             {
                                 path: '/logistics/dispatchmanagement/list',
                                 name: '发货单列表',
-                                component: './Logistics/Dispatchmanagement',
+                                component: './Logistics/Dispatchmanagement/index',
+                            },
+                            {
+                                path: '/logistics/dispatchmanagement/detail',
+                                name: '发货单详情',
+                                hideInMenu: true,
+                                component: './Logistics/Dispatchmanagement/detail',
+                            },
+                            {
+                                path: '/logistics/dispatchmanagement/create',
+                                name: '生成物流单',
+                                hideInMenu: true,
+                                component: './Logistics/Dispatchmanagement/create',
                             },
                         ],
                     },
@@ -276,7 +298,18 @@ export default [
                                 name: '物流单列表',
                                 component: './Logistics/LogisticsBillManagement',
                             },
+                            {
+                                path: '/logistics/logisticsbillmanagement/detail',
+                                name: '物流单详情',
+                                hideInMenu: true,
+                                component: './Logistics/LogisticsBillManagement/detail',
+                            },
                         ],
+                    },
+                    {
+                        path: '/logistics/logisticsbillcompany/F5622922B41DB0C13D',
+                        name: '物流公司管理',
+                        component: './Property/Classmanagement',
                     },
                 ],
             },

@@ -2,16 +2,17 @@ import React, { Component } from 'react'
 import { connect } from 'dva'
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper'
-import SearchForm from '@/components/SearchForm'
+// import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
+import Button from '@/components/Button'
 
-// import { fetchFunction } from '@/services'
-const fetchFunction = async () => ({ data: { list: [], count: 0 }, success: true })
+import { logisticsPost } from '@/services/common'
+import { createSignOptions } from '@/utils/utils'
 
 @connect(() => ({}))
 class LogisticsBillManagement extends Component {
     state = {
-        searchCondition: {}, // 搜索条件
+        // searchCondition: {}, // 搜索条件
         dataSrouce: [], // 表格数据
         pagination: {
             current: 1,
@@ -21,26 +22,30 @@ class LogisticsBillManagement extends Component {
     }
 
     componentDidMount() {
+        console.log(111)
         this.fetchData()
     }
 
     // 请求表格的数据
-    fetchData = (parmas = {}) => {
-        const { pageNum, ...params } = parmas
-        const { pagination, searchCondition } = this.state
-
-        fetchFunction({
-            pageSize: pagination.pageSize,
-            pageNum: pageNum || pagination.current,
-            ...searchCondition,
-            ...params,
-        }).then(res => {
-            if (res && res.success) {
+    fetchData = () => {
+        const { pagination } = this.state
+        const params = {
+            t: 'orders',
+            index: pagination.current,
+            size: pagination.pageSize,
+        }
+        createSignOptions(params)
+        const formData = new FormData()
+        Object.keys(params).forEach(key => {
+            formData.append(key, params[key])
+        })
+        logisticsPost('', formData).then(res => {
+            if (res && res.errcode === 0) {
                 this.setState({
-                    dataSrouce: res.data.list,
+                    dataSrouce: res.data,
                     pagination: {
                         ...pagination,
-                        total: res.data.count,
+                        total: res.pages.count,
                     },
                 })
             }
@@ -48,25 +53,25 @@ class LogisticsBillManagement extends Component {
     }
 
     // 查询表单搜索
-    handleFormSearch = values => {
-        const { pagination } = this.state
+    // handleFormSearch = values => {
+    //     const { pagination } = this.state
 
-        this.setState(
-            {
-                searchCondition: values,
-                pagination: {
-                    ...pagination,
-                    current: 1,
-                },
-            },
-            () => {
-                this.fetchData()
-            }
-        )
-    }
+    //     this.setState(
+    //         {
+    //             searchCondition: values,
+    //             pagination: {
+    //                 ...pagination,
+    //                 current: 1,
+    //             },
+    //         },
+    //         () => {
+    //             this.fetchData()
+    //         }
+    //     )
+    // }
 
     // 查询表单下载
-    handleFromDownload = values => {}
+    // handleFromDownload = values => {}
 
     // 切换分页
     handleChangePage = page => {
@@ -87,12 +92,17 @@ class LogisticsBillManagement extends Component {
         )
     }
 
+    handleShowDetail = serialNo => {
+        const { history } = this.props
+        history.push(`/logistics/logisticsbillmanagement/detail?serialNo=${serialNo}`)
+    }
+
     render() {
         const { dataSrouce, pagination } = this.state
 
         return (
             <PageHeaderWrapper>
-                <SearchForm
+                {/* <SearchForm
                     data={[
                         {
                             label: '发货日期',
@@ -120,129 +130,76 @@ class LogisticsBillManagement extends Component {
                         { onSearch: this.handleFormSearch },
                         { onDownload: this.handleFromDownload },
                     ]}
-                />
+                /> */}
                 <BasicTable
                     columns={[
                         {
                             title: '批次号',
-                            dataIndex: 'col1',
+                            dataIndex: 'id',
                         },
                         {
                             title: '物流单号',
-                            dataIndex: 'col2',
+                            dataIndex: 'serial_no',
                         },
                         {
                             title: '发货日期',
-                            dataIndex: 'amount',
-                            type: 'amount',
+                            dataIndex: 'ship_date',
                         },
                         {
                             title: '物流公司',
-                            dataIndex: 'datecol',
-                            type: 'date',
+                            dataIndex: 'logistics_name',
                         },
                         {
-                            dataIndex: 'key-0',
+                            dataIndex: 'cost_total',
                             title: '物流成本',
                         },
                         {
-                            dataIndex: 'key-1',
+                            dataIndex: 'vehicle_type',
                             title: '车辆类型',
                         },
                         {
-                            dataIndex: 'key-2',
+                            dataIndex: 'vehicle_no',
                             title: '车牌号码',
                         },
                         {
-                            dataIndex: 'key-3',
+                            dataIndex: 'driver_name',
                             title: '驾驶员姓名',
                         },
                         {
-                            dataIndex: 'key-4',
+                            dataIndex: 'driver_mobile',
                             title: '驾驶员联系方式',
                         },
                         {
-                            dataIndex: 'key-5',
+                            dataIndex: 'supplier_address',
                             title: '发货地',
                         },
                         {
-                            dataIndex: 'key-6',
+                            dataIndex: 'mch_address',
                             title: '收货地',
                         },
                         {
-                            dataIndex: 'key-7',
-                            title: 'skuID',
-                        },
-                        {
-                            dataIndex: 'key-8',
-                            title: ' sku品名',
-                        },
-                        {
-                            dataIndex: 'key-9',
-                            title: '品类',
-                        },
-                        {
-                            dataIndex: 'key-10',
-                            title: '产区',
-                        },
-                        {
-                            dataIndex: 'key-11',
-                            title: '品种',
-                        },
-                        {
-                            dataIndex: 'key-12',
-                            title: '存储情况',
-                        },
-                        {
-                            dataIndex: 'key-13',
-                            title: '加工情况',
-                        },
-                        {
-                            dataIndex: 'key-14',
-                            title: '内包装',
-                        },
-                        {
-                            dataIndex: 'key-15',
-                        },
-                        {
-                            dataIndex: 'key-16',
-                            title: '外包装',
-                        },
-                        {
-                            dataIndex: 'key-17',
-                            title: '实际规格值',
-                        },
-                        {
-                            dataIndex: 'key-18',
-                            title: '净重',
-                        },
-                        {
-                            dataIndex: 'key-19',
-                            title: '订货数量',
-                        },
-                        {
-                            dataIndex: 'key-20',
-                            title: '实际采购数量',
-                        },
-                        {
-                            dataIndex: 'key-21',
+                            dataIndex: 'arrive_date',
                             title: '预计到达时间',
-                        },
-                        {
-                            dataIndex: 'key-22',
-                            title: '采购日期',
-                        },
-                        {
-                            dataIndex: 'key-23',
-                            title: '采购人员',
                         },
                         {
                             fixed: 'right',
                             type: 'oprate',
-                            buttons: [{ text: '查看详情' }, { text: '编辑' }],
+                            render: (_, { serial_no: serialNo }) => {
+                                return (
+                                    <div>
+                                        <Button
+                                            onClick={() => this.handleShowDetail(serialNo)}
+                                            size="small"
+                                            type="default"
+                                        >
+                                            查看详情
+                                        </Button>
+                                    </div>
+                                )
+                            },
                         },
                     ]}
-                    scroll={{ x: 2800 }}
+                    scroll={{ x: 2100 }}
                     dataSource={dataSrouce}
                     pagination={{
                         ...pagination,

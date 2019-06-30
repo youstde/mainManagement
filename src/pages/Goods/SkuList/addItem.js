@@ -14,7 +14,13 @@ import 'braft-editor/dist/index.css'
 
 // import Button from '@/components/Button'
 
-import { configurationGet, goodsBaseGet, generalGet, goodsPost } from '@/services/common'
+import {
+    configurationGet,
+    goodsBaseGet,
+    generalGet,
+    goodsPost,
+    generalPost,
+} from '@/services/common'
 
 const { Option } = Select
 
@@ -241,6 +247,28 @@ class SkuListAdd extends PureComponent {
         }
     }
 
+    myUploadFn = param => {
+        console.log(param)
+        const formData = new FormData()
+        formData.append('files[]', param.file)
+        generalPost(
+            {
+                t: 'upload',
+            },
+            formData
+        ).then(res => {
+            if (res && res.errcode === 0) {
+                param.success({
+                    url: `${res.data.path}?x-oss-process=style/m`,
+                    meta: {
+                        id: res.request_id,
+                    },
+                })
+                param.progress(100)
+            }
+        })
+    }
+
     render() {
         const {
             form: { getFieldDecorator },
@@ -451,6 +479,7 @@ class SkuListAdd extends PureComponent {
                                 value={editorState}
                                 onChange={this.handleEditorChange}
                                 onSave={this.submitContent}
+                                media={{ uploadFn: this.myUploadFn }}
                             />
                         </div>
                     )}

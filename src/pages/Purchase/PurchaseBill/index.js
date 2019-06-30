@@ -6,12 +6,14 @@ import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
 
-import { purchasePost, configurationGet, goodsBaseGet } from '@/services/common'
+import { purchasePost, configurationGet, goodsBaseGet, deliversGet } from '@/services/common'
 import { createSignOptions, clearDate } from '@/utils/utils'
+import { message } from 'antd'
 
 @connect(() => ({}))
 class PurchaseBillList extends Component {
     state = {
+        selectedRowKeys: [],
         providerCid: 'A2CDF5CDE38BEFEB3E',
         providerData: [],
         skuData: [],
@@ -137,8 +139,43 @@ class PurchaseBillList extends Component {
         console.log(`selected ${value}`)
     }
 
+    onSelectChange = selectedRowKeys => {
+        this.setState({ selectedRowKeys })
+        console.log(selectedRowKeys)
+    }
+
+    handleShowEdit = () => {
+        const { history } = this.props
+        const { selectedRowKeys } = this.state
+
+        if (selectedRowKeys.length) {
+            let ids = ''
+            selectedRowKeys.forEach(key => {
+                ids += `${key},`
+            })
+            ids = ids.replace(/,$/, '')
+            deliversGet({
+                t: 'order.make',
+                ids,
+            }).then(res => {
+                if (res && res.errcode === 0) {
+                    message.success('生成成功!', 1, () => {
+                        history.push('/purchase/dispatchbill/list')
+                    })
+                }
+            })
+        } else {
+            message.warn('请勾选需要生成发货单的采购单!')
+        }
+    }
+
     render() {
-        const { dataSrouce, pagination, providerData, skuData } = this.state
+        const { dataSrouce, pagination, providerData, skuData, selectedRowKeys } = this.state
+
+        const rowSelection = {
+            selectedRowKeys,
+            onChange: this.onSelectChange,
+        }
 
         function createRoleOptions() {
             const roleOptions = providerData.map(item => {
@@ -260,6 +297,9 @@ class PurchaseBillList extends Component {
                             },
                         },
                     ]}
+                    scroll={{ x: 1100 }}
+                    rowKey={record => record.id}
+                    rowSelection={rowSelection}
                     dataSource={dataSrouce}
                     pagination={{
                         ...pagination,

@@ -6,6 +6,7 @@ import md5 from 'md5'
 
 // const baseUrl = '/api'
 const baseUrl = '//admin.api.fresh.laoniutech.com'
+let test = ''
 
 const loading = {
     show() {
@@ -142,11 +143,15 @@ const createAPI = (url, method, config) => {
             const userInfo = JSON.parse(userInfoStr)
             localUk = userInfo.uk
         }
-        params.uk = localUk
+        if (localUk) params.uk = localUk
         params.ver = '1.0.0'
         params.ts = Date.parse(new Date().toUTCString()) / 1000
+        if (params.ts === createAPI.lastDate) {
+            params.tip = uuid()
+        }
         params.sign = md5(createSign(params))
         config.params = params
+        createAPI.lastDate = params.ts
     }
 
     return instance({

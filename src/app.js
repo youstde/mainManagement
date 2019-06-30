@@ -21,16 +21,5 @@ export function onRouteChange({ location: { query } }) {
 }
 
 export function render(oldRender) {
-    const { search } = window.location
-
-    if (search) {
-        // 老后台跳转新后台时，设置sessionId的方式
-        const searchRe = search.replace(/\?/, '')
-        const { sessionId } = qs.parse(searchRe)
-
-        if (sessionId) {
-            setSession(sessionId)
-        }
-    }
     oldRender()
 }

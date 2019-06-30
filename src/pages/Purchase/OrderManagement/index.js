@@ -7,11 +7,13 @@ import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
 
-import { goodsBaseGet } from '@/services/common'
+import { goodsBaseGet, storeBaseGet } from '@/services/common'
+import { clearDate } from '@/utils/utils'
 
 @connect(() => ({}))
 class PurchaseOrderManagement extends Component {
     state = {
+        storeData: [],
         selectedRowKeys: [],
         searchCondition: {}, // 搜索条件
         dataSrouce: [], // 表格数据
@@ -24,6 +26,7 @@ class PurchaseOrderManagement extends Component {
 
     componentDidMount() {
         this.fetchData()
+        this.fetchStoreData()
     }
 
     // 请求表格的数据
@@ -43,7 +46,7 @@ class PurchaseOrderManagement extends Component {
             options.mch_id = searchCondition.mch_id
         }
         if (searchCondition.date) {
-            options.date = searchCondition.date
+            options.date = clearDate(searchCondition.date)
         }
         if (searchCondition.status) {
             options.status = searchCondition.status
@@ -57,6 +60,18 @@ class PurchaseOrderManagement extends Component {
                         ...pagination,
                         total: res.pages.count,
                     },
+                })
+            }
+        })
+    }
+
+    fetchStoreData = () => {
+        storeBaseGet({
+            t: 'list',
+        }).then(res => {
+            if (res && res.errcode === 0) {
+                this.setState({
+                    storeData: res.data,
                 })
             }
         })
@@ -127,11 +142,20 @@ class PurchaseOrderManagement extends Component {
     }
 
     render() {
-        const { dataSrouce, pagination, selectedRowKeys } = this.state
+        const { dataSrouce, pagination, selectedRowKeys, storeData } = this.state
 
         const rowSelection = {
             selectedRowKeys,
             onChange: this.onSelectChange,
+        }
+        function createStrorOption() {
+            const arr = storeData.map(item => {
+                return {
+                    key: item.id,
+                    value: item.name,
+                }
+            })
+            return arr
         }
 
         return (
@@ -146,7 +170,7 @@ class PurchaseOrderManagement extends Component {
                         {
                             label: '门店',
                             type: 'select',
-                            options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
+                            options: createStrorOption(),
                             key: 'mch_id',
                         },
                         {
@@ -158,7 +182,7 @@ class PurchaseOrderManagement extends Component {
                             label: '状态',
                             type: 'select',
                             key: 'status',
-                            options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
+                            options: [{ key: 0, value: '未处理' }, { key: 1, value: '已处理' }],
                         },
                     ]}
                     buttonGroup={[{ onSearch: this.handleFormSearch }]}

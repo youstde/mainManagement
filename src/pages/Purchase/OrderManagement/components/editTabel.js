@@ -5,8 +5,8 @@ import { Table, Input, Button, Form } from 'antd'
 
 import { purchasePost } from '@/services/common'
 
-import { createSign } from '@/utils/utils'
-import md5 from 'md5'
+import { createSignOptions } from '@/utils/utils'
+// import styles from './index.less'
 
 const EditableContext = React.createContext()
 
@@ -36,11 +36,12 @@ class EditableCell extends Component {
     save = e => {
         const { record, handleSave } = this.props
         this.form.validateFields((error, values) => {
+            console.log('values:', values)
             if (error && error[e.currentTarget.id]) {
                 return
             }
             this.toggleEdit()
-            handleSave({ ...record, ...values })
+            handleSave({ ...record, ...values }, values)
         })
     }
 
@@ -68,7 +69,8 @@ class EditableCell extends Component {
             </Form.Item>
         ) : (
             <div
-                className="editable-cell-value-wrap"
+                // className={styles.editableCellValueWrap}
+                className="editableCellValueWrap"
                 style={{ paddingRight: 24, minHeight: '40px' }}
                 onClick={this.toggleEdit}
             >
@@ -132,17 +134,9 @@ class EditableTable extends Component {
         })
     }
 
-    handleSave = row => {
+    handleSave = (row, values) => {
         const { ids, inputChangeBc } = this.props
         const { dataSource } = this.state
-        const newData = [...dataSource]
-        const index = newData.findIndex(item => row.id === item.id)
-        const item = newData[index]
-        newData.splice(index, 1, {
-            ...item,
-            ...row,
-        })
-        this.setState({ dataSource: newData })
 
         const {
             id,
@@ -164,7 +158,7 @@ class EditableTable extends Component {
         if (price_unit) params.price_unit = price_unit
         if (price_total) params.price_total = price_total
         if (weight_net) params.weight_net = weight_net
-        this.createSignOptions(params)
+        createSignOptions(params)
         const formData = new FormData()
         Object.keys(params).forEach(key => {
             formData.append(key, params[key])
@@ -173,26 +167,17 @@ class EditableTable extends Component {
             if (res && res.errcode === 0) {
                 const { additional } = res
                 inputChangeBc(additional)
+                const newData = [...dataSource]
+                const index = newData.findIndex(item => row.id === item.id)
+                // const item = newData[index]
+                // console.log('item:', item, row)
+                newData.splice(index, 1, {
+                    ...row,
+                    ...res.data,
+                })
+                this.setState({ dataSource: newData })
             }
         })
-    }
-
-    createSignOptions = params => {
-        const uuId = localStorage.getItem('uuId')
-        if (uuId) {
-            params.sk = uuId
-        }
-        const userInfoStr = localStorage.getItem('user_info')
-        let localUk = ''
-        if (userInfoStr) {
-            const userInfo = JSON.parse(userInfoStr)
-            localUk = userInfo.uk
-        }
-        params.uk = localUk
-        params.ver = '1.0.0'
-        params.ts = Date.parse(new Date().toUTCString()) / 1000
-
-        params.sign = md5(createSign(params))
     }
 
     submit = () => {

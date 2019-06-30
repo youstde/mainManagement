@@ -66,6 +66,8 @@ export function createSignOptions(params) {
     params.uk = localUk
     params.ver = '1.0.0'
     params.ts = Date.parse(new Date().toUTCString()) / 1000
+    if (params.ts === createSignOptions.lastDate) params.ts += 1
+    createSignOptions.lastDate = params.ts
 
     params.sign = md5(createSign(params))
 }

@@ -14,7 +14,13 @@ import 'braft-editor/dist/index.css'
 
 // import Button from '@/components/Button'
 
-import { configurationGet, goodsBaseGet, generalGet, goodsPost } from '@/services/common'
+import {
+    configurationGet,
+    goodsBaseGet,
+    generalGet,
+    goodsPost,
+    generalPost,
+} from '@/services/common'
 
 const { Option } = Select
 
@@ -67,6 +73,7 @@ class SkuListEdit extends PureComponent {
     }
 
     fetchData = () => {
+        const { form } = this.props
         const { activeId } = this.state
         goodsBaseGet({
             t: 'sku.info',
@@ -76,7 +83,12 @@ class SkuListEdit extends PureComponent {
                 const {
                     pictures_same_spu: picturesSameSpu,
                     describe_same_spu: describeSameSpu,
+                    premiums,
                 } = res.data
+                form.setFieldsValue({
+                    priceLevel1: premiums[0].value,
+                    priceLevel2: premiums[1].value,
+                })
                 this.setState({
                     dataSource: res.data,
                     picturesSameSpu,
@@ -288,6 +300,28 @@ class SkuListEdit extends PureComponent {
                 describeSameSpu: 0,
             })
         }
+    }
+
+    myUploadFn = param => {
+        console.log(param)
+        const formData = new FormData()
+        formData.append('files[]', param.file)
+        generalPost(
+            {
+                t: 'upload',
+            },
+            formData
+        ).then(res => {
+            if (res && res.errcode === 0) {
+                param.success({
+                    url: `${res.data.path}?x-oss-process=style/m`,
+                    meta: {
+                        id: res.request_id,
+                    },
+                })
+                param.progress(100)
+            }
+        })
     }
 
     render() {
@@ -520,6 +554,7 @@ class SkuListEdit extends PureComponent {
                                 value={editorState}
                                 onChange={this.handleEditorChange}
                                 onSave={this.submitContent}
+                                media={{ uploadFn: this.myUploadFn }}
                             />
                         </div>
                     )}
