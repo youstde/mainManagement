@@ -7,7 +7,7 @@ import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
 
-import { goodsBaseGet, storeBaseGet } from '@/services/common'
+import { goodsBaseGet, storeBaseGet, generalGet } from '@/services/common'
 import { clearDate } from '@/utils/utils'
 
 @connect(() => ({}))
@@ -66,8 +66,8 @@ class PurchaseOrderManagement extends Component {
     }
 
     fetchStoreData = () => {
-        storeBaseGet({
-            t: 'list',
+        generalGet({
+            t: 'merchants',
         }).then(res => {
             if (res && res.errcode === 0) {
                 this.setState({
@@ -161,8 +161,8 @@ class PurchaseOrderManagement extends Component {
         function createStrorOption() {
             const arr = storeData.map(item => {
                 return {
-                    key: item.id,
-                    value: item.name,
+                    key: item.value,
+                    value: item.text,
                 }
             })
             return arr

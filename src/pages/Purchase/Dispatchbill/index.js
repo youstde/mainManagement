@@ -6,7 +6,13 @@ import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
 
-import { deliversPost, goodsBaseGet, configurationGet, storeBaseGet } from '@/services/common'
+import {
+    deliversPost,
+    goodsBaseGet,
+    configurationGet,
+    storeBaseGet,
+    generalGet,
+} from '@/services/common'
 import { createSignOptions, clearDate } from '@/utils/utils'
 
 @connect(() => ({}))
@@ -64,8 +70,8 @@ class PurchaseDispatchbillList extends Component {
     }
 
     fetchSkuData = () => {
-        goodsBaseGet({
-            t: 'sku.list',
+        generalGet({
+            t: 'skus',
         }).then(res => {
             this.setState({
                 skuData: res.data,
@@ -88,8 +94,8 @@ class PurchaseDispatchbillList extends Component {
     }
 
     fetchStoreData = () => {
-        storeBaseGet({
-            t: 'list',
+        generalGet({
+            t: 'merchants',
         }).then(res => {
             if (res && res.errcode === 0) {
                 this.setState({
@@ -150,8 +156,8 @@ class PurchaseDispatchbillList extends Component {
         function createSkuOptions() {
             const arr = skuData.map(item => {
                 return {
-                    key: item.skuid,
-                    value: item.name,
+                    key: item.value,
+                    value: item.text,
                 }
             })
             return arr
@@ -167,6 +173,16 @@ class PurchaseDispatchbillList extends Component {
             return arr
         }
 
+        function createStoreOptions() {
+            const arr = storeData.map(item => {
+                return {
+                    key: item.value,
+                    value: item.text,
+                }
+            })
+            return arr
+        }
+
         return (
             <PageHeaderWrapper>
                 <SearchForm
@@ -174,7 +190,7 @@ class PurchaseDispatchbillList extends Component {
                         {
                             label: ' sku品名',
                             type: 'select',
-                            options: createSkuOptions(skuData),
+                            options: createSkuOptions(),
                             key: 'skuid',
                         },
                         {
@@ -198,7 +214,7 @@ class PurchaseDispatchbillList extends Component {
                             key: 'mch_id',
                             label: '订货门店',
                             type: 'select',
-                            options: createOptions(storeData || []),
+                            options: createStoreOptions(),
                         },
                     ]}
                     buttonGroup={[

@@ -73,7 +73,8 @@ class StoremanagementIndex extends Component {
             history,
         } = this.props
         console.log('newQuery:', newQuery, pathname)
-        history.replace(`${pathname}${newQuery}`)
+        // TODO：将搜索条件同步到地址栏中
+        // history.replace(`${pathname}${newQuery}`)
         const { pagination } = this.state
 
         this.setState(
@@ -160,6 +161,7 @@ class StoremanagementIndex extends Component {
     }
 
     handleShowDetail = storeId => {
+        console.log('storeId:', storeId)
         this.setState({
             visibleModal: true,
             activeStoreId: storeId,
@@ -262,7 +264,7 @@ class StoremanagementIndex extends Component {
                                 return (
                                     <div>
                                         <Button
-                                            onClick={() => this.handleShowDetail(storeData.storeId)}
+                                            onClick={() => this.handleShowDetail(storeData.id)}
                                             size="small"
                                             type="default"
                                             style={{ marginBottom: '10px' }}
@@ -280,7 +282,7 @@ class StoremanagementIndex extends Component {
                                         <span>&nbsp;</span>
                                         <Popconfirm
                                             title="确定删除该门店吗?"
-                                            onConfirm={() => this.deleteItem(storeData.storeId)}
+                                            onConfirm={() => this.deleteItem(storeData.id)}
                                             okText="确定"
                                             cancelText="取消"
                                         >

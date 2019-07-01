@@ -85,6 +85,8 @@ class EditItem extends Component {
         const { item } = this.state
         const { onDateOk, handleSelectChange } = this
 
+        console.log('teim:', item)
+
         const dateFormat = 'YYYY-MM-DD hh:mm:ss'
 
         const formItemLayout = {
@@ -178,7 +180,10 @@ class EditItem extends Component {
                                     ],
                                 })(
                                     <Input
-                                        disabled={field.unmodifiable === 1}
+                                        disabled={
+                                            item[field.field_name] !== undefined &&
+                                            field.unmodifiable === 1
+                                        }
                                         placeholder={field.placeholder}
                                     />
                                 )}

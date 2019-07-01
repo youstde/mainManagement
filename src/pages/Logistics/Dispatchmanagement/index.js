@@ -10,7 +10,7 @@ import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
 
-import { deliversPost, goodsBaseGet, storeBaseGet } from '@/services/common'
+import { deliversPost, goodsBaseGet, storeBaseGet, generalGet } from '@/services/common'
 import { createSignOptions, clearDate } from '@/utils/utils'
 
 function inject_unount(target) {
@@ -84,8 +84,8 @@ class LogisticsDispatchmanagement extends Component {
     }
 
     fetchSkuData = () => {
-        goodsBaseGet({
-            t: 'sku.list',
+        generalGet({
+            t: 'skus',
         }).then(res => {
             this.setState({
                 skuData: res.data,
@@ -94,8 +94,8 @@ class LogisticsDispatchmanagement extends Component {
     }
 
     fetchStoreData = () => {
-        storeBaseGet({
-            t: 'list',
+        generalGet({
+            t: 'merchants',
         }).then(res => {
             if (res && res.errcode === 0) {
                 this.setState({
@@ -191,18 +191,18 @@ class LogisticsDispatchmanagement extends Component {
             const data = skuData || []
             const arr = data.map(item => {
                 return {
-                    key: item.skuid,
-                    value: item.name,
+                    key: item.value,
+                    value: item.text,
                 }
             })
             return arr
         }
 
-        function createOptions(data) {
-            const arr = data.map(item => {
+        function createStoreOptions() {
+            const arr = storeData.map(item => {
                 return {
-                    key: item.id,
-                    value: item.name,
+                    key: item.value,
+                    value: item.text,
                 }
             })
             return arr
@@ -227,7 +227,7 @@ class LogisticsDispatchmanagement extends Component {
                             label: '门店',
                             type: 'select',
                             key: 'mch_id',
-                            options: createOptions(storeData),
+                            options: createStoreOptions(),
                         },
                     ]}
                     buttonGroup={[

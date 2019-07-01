@@ -6,7 +6,13 @@ import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
 
-import { purchasePost, configurationGet, goodsBaseGet, deliversGet } from '@/services/common'
+import {
+    purchasePost,
+    configurationGet,
+    goodsBaseGet,
+    deliversGet,
+    generalGet,
+} from '@/services/common'
 import { createSignOptions, clearDate } from '@/utils/utils'
 import { message } from 'antd'
 
@@ -43,7 +49,7 @@ class PurchaseBillList extends Component {
         }
         if (searchCondition.supplier_id) params.supplier_id = searchCondition.supplier_id
         if (searchCondition.date) params.date = clearDate(searchCondition.date)
-        if (searchCondition.status !== '') params.status = searchCondition.status
+        if (searchCondition.status !== undefined) params.status = searchCondition.status
         if (searchCondition.skuid) params.skuid = searchCondition.skuid
         if (searchCondition.buyer) params.buyer = searchCondition.buyer
         createSignOptions(params)
@@ -79,8 +85,8 @@ class PurchaseBillList extends Component {
     }
 
     fetchSkuData = () => {
-        goodsBaseGet({
-            t: 'sku.list',
+        generalGet({
+            t: 'skus',
         }).then(res => {
             if (res && res.errcode === 0) {
                 this.setState({
@@ -200,8 +206,8 @@ class PurchaseBillList extends Component {
         function createSkuOptions() {
             const skuOptions = skuData.map(item => {
                 return {
-                    key: item.skuid,
-                    value: item.name,
+                    key: item.value,
+                    value: item.text,
                 }
             })
             return skuOptions

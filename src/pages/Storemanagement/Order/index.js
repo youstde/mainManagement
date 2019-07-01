@@ -5,6 +5,8 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper'
 import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 
+import { generalGet } from '@/services/common'
+
 // mock
 // import OrderMock from '../mock/order'
 
@@ -14,6 +16,7 @@ const fetchFunction = async () => ({ data: { list: [], count: 0 }, success: true
 @connect(() => ({}))
 class StoremanagementOrder extends Component {
     state = {
+        storeData: [],
         searchCondition: {}, // 搜索条件
         dataSrouce: [], // 表格数据
         pagination: {
@@ -25,6 +28,7 @@ class StoremanagementOrder extends Component {
 
     componentDidMount() {
         // this.fetchData()
+        this.fetchStoreData()
     }
 
     // 请求表格的数据
@@ -45,6 +49,18 @@ class StoremanagementOrder extends Component {
                         ...pagination,
                         total: res.data.count,
                     },
+                })
+            }
+        })
+    }
+
+    fetchStoreData = () => {
+        generalGet({
+            t: 'merchants',
+        }).then(res => {
+            if (res && res.errcode === 0) {
+                this.setState({
+                    storeData: res.data,
                 })
             }
         })
@@ -91,8 +107,18 @@ class StoremanagementOrder extends Component {
     }
 
     render() {
-        const { dataSrouce, pagination } = this.state
+        const { dataSrouce, pagination, storeData } = this.state
         console.log(dataSrouce)
+
+        function createStoreOptions() {
+            const arr = storeData.map(item => {
+                return {
+                    key: item.value,
+                    value: item.text,
+                }
+            })
+            return arr
+        }
 
         return (
             <PageHeaderWrapper>
@@ -124,7 +150,7 @@ class StoremanagementOrder extends Component {
                             key: 'storeName',
                             label: '门店',
                             type: 'select',
-                            options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
+                            options: createStoreOptions(),
                         },
                     ]}
                     buttonGroup={[
