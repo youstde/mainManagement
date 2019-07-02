@@ -56,10 +56,8 @@ class SkuListAdd extends PureComponent {
     }
 
     fetchSpuList = () => {
-        goodsBaseGet({
-            t: 'spu.list',
-            index: 1,
-            size: 100,
+        generalGet({
+            t: 'spus',
         }).then(res => {
             if (res && res.errcode === 0) {
                 this.setState({
@@ -163,7 +161,7 @@ class SkuListAdd extends PureComponent {
                     ]),
                 }
                 if (!picturesSameSpu) params.pictures = JSON.stringify(values.pictures)
-                if (!describeSameSpu) params.describe = values.htmlContent
+                if (!describeSameSpu) params.describe = htmlContent
                 if (values.packing_aid) params.packing_aid = values.packing_aid
                 if (values.packing_bid) params.packing_bid = values.packing_bid
                 if (values.levels) params.levels = values.levels
@@ -324,8 +322,8 @@ class SkuListAdd extends PureComponent {
         function createSpuOption(data) {
             const arr = data.map(item => {
                 return (
-                    <Option value={item.spuid} key={item.spuid}>
-                        {item.name}
+                    <Option value={item.value} key={item.value}>
+                        {item.text}
                     </Option>
                 )
             })

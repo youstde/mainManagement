@@ -50,6 +50,13 @@ class SpuListDetail extends PureComponent {
             return arr
         }
 
+        // 过滤富文本中出现的空的p标签
+        const filterHtml = domStr => {
+            let newStr = domStr || ''
+            newStr = newStr.replace(/<p><\/p>/g, '')
+            return newStr
+        }
+
         return (
             <Fragment>
                 <DetailList
@@ -94,7 +101,7 @@ class SpuListDetail extends PureComponent {
                 <div style={{ padding: '40px 20px', border: '1px solid #f1f1f1' }}>
                     <div
                         className="braft-output-content"
-                        dangerouslySetInnerHTML={{ __html: detailList.describe }}
+                        dangerouslySetInnerHTML={{ __html: filterHtml(detailList.describe) }}
                     />
                 </div>
                 <div style={{ padding: '30px 0', textAlign: 'right' }}>

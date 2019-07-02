@@ -65,8 +65,8 @@ class PurchaseManualCreateOrder extends Component {
             if (res && res.errcode === 0) {
                 const { cost_total, quantity_total } = res.additional
                 form.setFieldsValue({
-                    cost_total: cost_total || '',
-                    quantity_total: quantity_total || '',
+                    cost_total: cost_total || 0,
+                    quantity_total: quantity_total || 0,
                 })
                 let str = ''
                 res.data.forEach(item => {

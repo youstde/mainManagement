@@ -7,6 +7,7 @@ export default [
             { path: '/user', temp: true, redirect: '/user/login' },
             { path: '/user/login', temp: true, name: '登陆', component: './User/Login' },
             { path: '/user/register', temp: true, name: '注册', component: './User/Register' },
+            { path: '/user/resetpw', temp: true, name: '修改密码', component: './User/ResetPw' },
             {
                 path: '/user/register-result',
                 name: '注册详情',

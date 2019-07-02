@@ -74,6 +74,7 @@ export default class GlobalHeaderRight extends PureComponent {
         const currentUser = getUserInfo()
 
         const onMenuClick = e => {
+            const { history } = this.props
             console.log(e)
             if (e && e.key === 'logout') {
                 logout({
@@ -81,12 +82,13 @@ export default class GlobalHeaderRight extends PureComponent {
                 }).then(res => {
                     if (res && res.errcode === 0) {
                         localStorage.setItem('user_info', '')
-                        const { history } = this.props
                         message.success('退出成功!', 2, () => {
                             history.push('/user/login')
                         })
                     }
                 })
+            } else if (e && e.key === 'resetPw') {
+                history.replace('/user/resetpw')
             }
         }
         const menu = (
@@ -95,7 +97,7 @@ export default class GlobalHeaderRight extends PureComponent {
                     <Icon type="user" />
                     用户中心
                 </Menu.Item> */}
-                <Menu.Item key="userinfo">
+                <Menu.Item key="resetPw">
                     <Icon type="setting" />
                     修改密码
                 </Menu.Item>

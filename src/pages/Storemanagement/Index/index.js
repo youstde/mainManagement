@@ -318,7 +318,7 @@ class StoremanagementIndex extends Component {
                     footer={null}
                 >
                     <AddStore
-                        storeItemData={storeItemData || []}
+                        storeItemData={storeItemData || {}}
                         handleCancel={this.handleAddStoreCancel}
                     />
                 </Modal>

@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
 import { connect } from 'dva'
-import { Form, Input, Button, message, DatePicker, Select } from 'antd'
+import { Form, Input, Button, message, DatePicker, Select, Upload, Icon, Modal } from 'antd'
 import moment from 'moment'
+import UploadImg from '../components/uploadImg'
 
 import { configurationGet } from '@/services/common'
 
@@ -77,15 +78,23 @@ class EditItem extends Component {
 
     handleSelectChange = () => {}
 
+    handleUploadImg = (fieldName, path) => {
+        console.log('fieldName:', fieldName, path)
+        const { form } = this.props
+        if (path) {
+            form.setFieldsValue({
+                [fieldName]: path,
+            })
+        }
+    }
+
     render() {
         const {
             form: { getFieldDecorator },
             fields,
         } = this.props
         const { item } = this.state
-        const { onDateOk, handleSelectChange } = this
-
-        console.log('teim:', item)
+        const { onDateOk, handleSelectChange, handleUploadImg } = this
 
         const dateFormat = 'YYYY-MM-DD hh:mm:ss'
 
@@ -164,6 +173,25 @@ class EditItem extends Component {
                                     <Select onChange={handleSelectChange}>
                                         {createSelectOption(field.selects || [])}
                                     </Select>
+                                )}
+                            </Form.Item>
+                        )
+                    case 'file':
+                        return (
+                            <Form.Item label={field.show_name}>
+                                {getFieldDecorator(field.field_name, {
+                                    rules: [
+                                        {
+                                            required: true,
+                                            message: '此项不能为空!',
+                                        },
+                                    ],
+                                })(
+                                    <UploadImg
+                                        fieldName={field.field_name}
+                                        initPictures={item[field.field_name]}
+                                        changeBc={handleUploadImg}
+                                    />
                                 )}
                             </Form.Item>
                         )

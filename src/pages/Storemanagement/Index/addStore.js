@@ -45,7 +45,7 @@ class AddStore extends PureComponent {
                     contacter: values.contacter,
                     address: values.address,
                 }
-                if (storeItemData.length) params.id = storeItemData.id
+                if (storeItemData.name) params.id = storeItemData.id
                 storeBaseGet(params).then(res => {
                     if (res && res.errcode === 0) {
                         message.success('操作成功!', 2)

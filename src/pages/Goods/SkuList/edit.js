@@ -104,12 +104,10 @@ class SkuListEdit extends PureComponent {
                 }).then(data => {
                     if (data && data.errcode === 0) {
                         const { describe, pictures } = data.data
-                        this.setState({
-                            describeSameSpu: 1,
-                            spuDescribe: describe,
-                            picturesSameSpu: 1,
-                            spuPictures: pictures,
-                        })
+                        const params = {}
+                        if (picturesSameSpu) params.spuPictures = pictures
+                        if (describeSameSpu) params.spuDescribe = describe
+                        this.setState(params)
                     }
                 })
             }
@@ -117,10 +115,8 @@ class SkuListEdit extends PureComponent {
     }
 
     fetchSpuList = () => {
-        goodsBaseGet({
-            t: 'spu.list',
-            index: 1,
-            size: 100,
+        generalGet({
+            t: 'spus',
         }).then(res => {
             if (res && res.errcode === 0) {
                 this.setState({
@@ -225,7 +221,7 @@ class SkuListEdit extends PureComponent {
                     ]),
                 }
                 if (!picturesSameSpu) params.pictures = JSON.stringify(values.pictures)
-                if (!describeSameSpu) params.describe = values.htmlContent
+                if (!describeSameSpu) params.describe = htmlContent
                 if (values.packing_aid) params.packing_aid = values.packing_aid
                 if (values.packing_bid) params.packing_bid = values.packing_bid
                 if (values.levels) params.levels = values.levels
@@ -381,8 +377,8 @@ class SkuListEdit extends PureComponent {
         function createSpuOption(data) {
             const arr = data.map(item => {
                 return (
-                    <Option value={item.spuid} key={item.spuid}>
-                        {item.name}
+                    <Option value={item.value} key={item.value}>
+                        {item.text}
                     </Option>
                 )
             })

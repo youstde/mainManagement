@@ -118,6 +118,21 @@ class PropertyClassManagement extends Component {
 
         function createColumns() {
             const newArr = fields.map(item => {
+                console.log('item:', item.field_type)
+                if (item.field_type === 'file') {
+                    return {
+                        title: item.show_name,
+                        render: (_, dataItem) => {
+                            const key = item.field_name
+                            const imgArr = dataItem[key].split(',')
+                            console.log('imgArr:', imgArr)
+                            const imgStr = imgArr.map(img => {
+                                return <img style={{ width: '100px' }} src={img} alt="" />
+                            })
+                            return <div>{imgStr}</div>
+                        },
+                    }
+                }
                 return {
                     title: item.show_name,
                     dataIndex: item.field_name,

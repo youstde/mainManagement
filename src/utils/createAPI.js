@@ -6,7 +6,8 @@ import md5 from 'md5'
 
 // const baseUrl = '/api'
 const baseUrl = '//admin.api.fresh.laoniutech.com'
-let test = ''
+// const baseUrl = '//47.103.103.162:82'
+// const baseUrl = '//msapi.yicaipi.com'
 
 const loading = {
     show() {
