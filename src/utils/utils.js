@@ -39,7 +39,7 @@ export function uuid() {
 export function createSign(params) {
     let paramsArr = Object.keys(params).map(key => {
         if (params[key] === '') params[key] = undefined
-        return params[key] || undefined
+        return params[key]
     })
     paramsArr = paramsArr.sort()
 

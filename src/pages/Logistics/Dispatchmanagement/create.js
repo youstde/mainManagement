@@ -107,8 +107,8 @@ class LogisticsDispatchmanagement extends Component {
                     ship_date: clearDate(values.ship_date),
                     driver_name: values.driver_name,
                     driver_mobile: values.driver_mobile,
-                    pictures: imgStr,
                 }
+                if (imgStr) params.pictures = imgStr
                 createSignOptions(params)
                 const formData = new FormData()
                 Object.keys(params).forEach(key => {

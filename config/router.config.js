@@ -298,6 +298,23 @@ export default [
                 ],
             },
             {
+                path: '/repertory',
+                name: '库存管理',
+                icon: 'container',
+                routes: [
+                    {
+                        path: '/repertory/storewarehouse',
+                        name: '门店入库记录',
+                        component: './Repertory/Storewarehouse',
+                    },
+                    {
+                        path: '/repertory/storerepertory',
+                        name: '门店库存',
+                        component: './Repertory/StoreRepertory',
+                    },
+                ],
+            },
+            {
                 path: '/operation',
                 name: '运营管理',
                 icon: 'container',

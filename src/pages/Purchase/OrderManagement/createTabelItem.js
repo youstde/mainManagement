@@ -54,13 +54,14 @@ class CreateTabelItem extends PureComponent {
         const { form, handleCancelCreateItem } = this.props
         form.validateFields((err, values) => {
             if (!err) {
-                purchaseGet({
+                const params = {
                     t: 'sku.save',
-                    args: ids,
                     skuid: values.skuid,
                     mch_id: values.mch_id,
                     quantity_real: values.quantity_real,
-                }).then(res => {
+                }
+                if (ids) params.args = ids
+                purchaseGet(params).then(res => {
                     if (res && res.errcode === 0) {
                         handleCancelCreateItem()
                         window.sendMessage('update:dataSource', res.data)
