@@ -4,6 +4,7 @@ import { Modal, message } from 'antd'
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper'
 import BasicTable from '@/components/BasicTable'
+import SearchForm from '@/components/SearchForm'
 import Button from '@/components/Button'
 import EditItem from './edit'
 
@@ -38,13 +39,15 @@ class PropertyClassManagement extends Component {
 
     // 请求表格的数据
     fetchData = () => {
-        const { cid } = this.state
-
-        configurationGet({
+        const { cid, searchCondition } = this.state
+        const params = {
             t: 'list',
             cid,
             // ...searchCondition
-        }).then(res => {
+        }
+        const keys = Object.keys(searchCondition)
+        if (keys.length) params.q = JSON.stringify(searchCondition)
+        configurationGet(params).then(res => {
             if (res && res.errcode === 0) {
                 this.setState({
                     dataSrouce: res.data.values,
@@ -57,9 +60,15 @@ class PropertyClassManagement extends Component {
 
     // 查询表单搜索
     handleFormSearch = values => {
+        console.log('values:', values)
+        const newObj = {}
+        Object.keys(values).forEach(key => {
+            if (values[key] !== '' && values[key] !== undefined)
+                newObj[key] = values[key].replace(/\s/g, '')
+        })
         this.setState(
             {
-                searchCondition: values,
+                searchCondition: newObj,
             },
             () => {
                 this.fetchData()
@@ -117,42 +126,71 @@ class PropertyClassManagement extends Component {
         ]
 
         function createColumns() {
-            const newArr = fields.map(item => {
-                console.log('item:', item.field_type)
-                if (item.field_type === 'file') {
-                    return {
-                        title: item.show_name,
-                        render: (_, dataItem) => {
-                            const key = item.field_name
-                            const imgArr = dataItem[key].split(',')
-                            console.log('imgArr:', imgArr)
-                            const imgStr = imgArr.map(img => {
-                                return <img style={{ width: '100px' }} src={img} alt="" />
-                            })
-                            return <div>{imgStr}</div>
-                        },
+            const newArr = []
+            fields.forEach(item => {
+                if (!item.hidden) {
+                    if (item.field_type === 'file') {
+                        newArr.push({
+                            title: item.show_name,
+                            render: (_, dataItem) => {
+                                const key = item.field_name
+                                const imgArr = dataItem[key].split(',')
+                                const imgStr = imgArr.map(img => {
+                                    return <img style={{ width: '100px' }} src={img} alt="" />
+                                })
+                                return <div>{imgStr}</div>
+                            },
+                        })
+                    } else {
+                        newArr.push({
+                            title: item.show_name,
+                            dataIndex: item.field_name,
+                        })
                     }
-                }
-                return {
-                    title: item.show_name,
-                    dataIndex: item.field_name,
                 }
             })
             return [...newArr, ...stabelColumns]
         }
 
+        const searchDataArr = []
+        function createSearchForm() {
+            fields.forEach(field => {
+                if (field.search) {
+                    if (field.field_type === 'select') {
+                        const optionsArr = field.selects.map(item => {
+                            return {
+                                key: item.value,
+                                value: item.text,
+                            }
+                        })
+                        searchDataArr.push({
+                            label: field.show_name,
+                            type: 'select',
+                            options: optionsArr,
+                            key: field.field_name,
+                        })
+                    } else {
+                        searchDataArr.push({
+                            label: field.show_name,
+                            type: 'input',
+                            key: field.field_name,
+                        })
+                    }
+                }
+            })
+        }
+        createSearchForm()
+
         return (
             <PageHeaderWrapper>
-                {/* <SearchForm
-                    data={[
-                        {
-                            label: '品类名称',
-                            type: 'input',
-                            key: 'q',
-                        },
-                    ]}
-                    buttonGroup={[{ onSearch: this.handleFormSearch }]}
-                /> */}
+                {searchDataArr.length ? (
+                    <SearchForm
+                        data={searchDataArr}
+                        buttonGroup={[{ onSearch: this.handleFormSearch }]}
+                    />
+                ) : (
+                    ''
+                )}
                 <div style={{ textAlign: 'right', paddingBottom: '10px' }}>
                     <Button onClick={() => this.handleShowEdit()} size="small" type="default">
                         新增

@@ -2,7 +2,7 @@ import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'dva'
 import { Form, Input, Select, Button } from 'antd'
 
-import { storeBaseGet, purchaseGet } from '@/services/common'
+import { storeBaseGet, purchaseGet, generalGet } from '@/services/common'
 
 const { Option } = Select
 
@@ -11,38 +11,38 @@ const { Option } = Select
 @connect(() => ({}))
 class CreateTabelItem extends PureComponent {
     state = {
-        mockArr: [
-            {
-                label: 's1',
-                id: 1,
-            },
-            {
-                label: 's2',
-                id: 2,
-            },
-            {
-                label: 's3',
-                id: 3,
-            },
-        ],
         storeList: [],
+        skuData: [],
     }
 
     componentDidMount() {
         // this.fetchOrderDetail()
         this.fetchStoreData()
+        this.fetchSkuData()
     }
 
     // 获取详情
     fetchOrderDetail = () => {}
 
     fetchStoreData = () => {
-        storeBaseGet({
-            t: 'list',
+        generalGet({
+            t: 'merchants',
         }).then(res => {
             if (res && res.errcode === 0) {
                 this.setState({
                     storeList: res.data,
+                })
+            }
+        })
+    }
+
+    fetchSkuData = () => {
+        generalGet({
+            t: 'skus',
+        }).then(res => {
+            if (res && res.errcode === 0) {
+                this.setState({
+                    skuData: res.data,
                 })
             }
         })
@@ -75,7 +75,7 @@ class CreateTabelItem extends PureComponent {
         const {
             form: { getFieldDecorator },
         } = this.props
-        const { storeList } = this.state
+        const { storeList, skuData } = this.state
 
         const formItemLayout = {
             labelCol: {
@@ -95,20 +95,16 @@ class CreateTabelItem extends PureComponent {
             },
         }
 
-        function createOption(arr) {
-            const OptionsArr = []
-            // eslint-disable-next-line array-callback-return
-            arr.some(item => {
-                OptionsArr.push(
-                    <Option key={item.id} value={item.id}>
-                        {item.name}
+        function createSkuOptions(data) {
+            const arr = data.map(item => {
+                return (
+                    <Option key={item.value} value={item.value}>
+                        {item.text}
                     </Option>
                 )
             })
-            return OptionsArr.concat()
+            return arr
         }
-
-        const skuArrOptionsArr = createOption(storeList)
 
         return (
             <Fragment>
@@ -122,7 +118,7 @@ class CreateTabelItem extends PureComponent {
                                         message: 'skuId不能为空!',
                                     },
                                 ],
-                            })(<Input placeholder="请输入skuId" />)}
+                            })(<Select onChange={() => {}}>{createSkuOptions(skuData)}</Select>)}
                         </Form.Item>
                         <Form.Item label="门店">
                             {getFieldDecorator('mch_id', {
@@ -132,7 +128,7 @@ class CreateTabelItem extends PureComponent {
                                         message: '门店不能为空!',
                                     },
                                 ],
-                            })(<Select onChange={() => {}}>{skuArrOptionsArr}</Select>)}
+                            })(<Select onChange={() => {}}>{createSkuOptions(storeList)}</Select>)}
                         </Form.Item>
                         <Form.Item label="实际采购数量">
                             {getFieldDecorator('quantity_real', {

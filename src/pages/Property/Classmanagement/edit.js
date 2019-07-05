@@ -27,7 +27,7 @@ class EditItem extends Component {
         const { form, cancelBc, pageConfig, item, fields } = this.props
         form.validateFieldsAndScroll((err, values) => {
             if (!err) {
-                console.log('Received values of form: ', values)
+                console.log('Received values of form: ', values, item)
                 const params = {
                     t: 'save',
                     id: item.id || 0,
@@ -37,6 +37,7 @@ class EditItem extends Component {
                 }
                 fields.forEach(field => {
                     const key = field.field_name
+                    console.log('111:', item[key])
                     if (values[key] !== undefined) {
                         if (field.field_type === 'date') {
                             params[key] = this.clearDate(values[key])
@@ -132,10 +133,11 @@ class EditItem extends Component {
             return arr
         }
         function createFormItem() {
-            const arr = fields.map(field => {
+            const arr = []
+            fields.forEach(field => {
                 switch (field.field_type) {
                     case 'date':
-                        return (
+                        arr.push(
                             <Form.Item label={field.show_name}>
                                 {getFieldDecorator(field.field_name, {
                                     initialValue: item[field.field_name]
@@ -158,8 +160,9 @@ class EditItem extends Component {
                                 )}
                             </Form.Item>
                         )
+                        break
                     case 'select':
-                        return (
+                        arr.push(
                             <Form.Item label={field.show_name}>
                                 {getFieldDecorator(field.field_name, {
                                     initialValue: item[field.field_name] || field.default_value,
@@ -176,8 +179,9 @@ class EditItem extends Component {
                                 )}
                             </Form.Item>
                         )
+                        break
                     case 'file':
-                        return (
+                        arr.push(
                             <Form.Item label={field.show_name}>
                                 {getFieldDecorator(field.field_name, {
                                     rules: [
@@ -195,8 +199,9 @@ class EditItem extends Component {
                                 )}
                             </Form.Item>
                         )
+                        break
                     default:
-                        return (
+                        arr.push(
                             <Form.Item label={field.show_name}>
                                 {getFieldDecorator(field.field_name, {
                                     initialValue: item[field.field_name] || field.default_value,

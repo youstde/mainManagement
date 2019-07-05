@@ -300,7 +300,7 @@ export default [
             {
                 path: '/repertory',
                 name: '库存管理',
-                icon: 'container',
+                icon: 'dropbox',
                 routes: [
                     {
                         path: '/repertory/storewarehouse',

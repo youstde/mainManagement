@@ -4,6 +4,7 @@ import { Modal, Popconfirm, message } from 'antd'
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper'
 import BasicTable from '@/components/BasicTable'
+import SearchForm from '@/components/SearchForm'
 import Button from '@/components/Button'
 import AddProvider from './addProvider'
 
@@ -18,6 +19,7 @@ class PurchaseProviderList extends Component {
         dataSrouce: [], // 表格数据
         fields: [],
         classList: [],
+        searchCondition: {}, // 搜索条件
     }
 
     componentDidMount() {
@@ -27,11 +29,15 @@ class PurchaseProviderList extends Component {
 
     // 请求表格的数据
     fetchData = () => {
-        const { cid } = this.state
-        configurationGet({
+        const { cid, searchCondition } = this.state
+        const params = {
             t: 'list',
             cid,
-        }).then(res => {
+            // ...searchCondition
+        }
+        const keys = Object.keys(searchCondition)
+        if (keys.length) params.q = JSON.stringify(searchCondition)
+        configurationGet(params).then(res => {
             if (res && res.errcode === 0) {
                 this.setState({
                     dataSrouce: res.data.values,
@@ -53,6 +59,24 @@ class PurchaseProviderList extends Component {
                 })
             }
         })
+    }
+
+    // 查询表单搜索
+    handleFormSearch = values => {
+        console.log('values:', values)
+        const newObj = {}
+        Object.keys(values).forEach(key => {
+            if (values[key] !== '' && values[key] !== undefined)
+                newObj[key] = values[key].replace(/\s/g, '')
+        })
+        this.setState(
+            {
+                searchCondition: newObj,
+            },
+            () => {
+                this.fetchData()
+            }
+        )
     }
 
     handleHideEdit = () => {
@@ -97,8 +121,45 @@ class PurchaseProviderList extends Component {
     render() {
         const { dataSrouce, showEdit, editItem, fields, cid, classList } = this.state
 
+        const searchDataArr = []
+        function createSearchForm() {
+            fields.forEach(field => {
+                if (field.search) {
+                    if (field.field_type === 'select') {
+                        const optionsArr = field.selects.map(item => {
+                            return {
+                                key: item.value,
+                                value: item.text,
+                            }
+                        })
+                        searchDataArr.push({
+                            label: field.show_name,
+                            type: 'select',
+                            options: optionsArr,
+                            key: field.field_name,
+                        })
+                    } else {
+                        searchDataArr.push({
+                            label: field.show_name,
+                            type: 'input',
+                            key: field.field_name,
+                        })
+                    }
+                }
+            })
+        }
+        createSearchForm()
+
         return (
             <PageHeaderWrapper>
+                {searchDataArr.length ? (
+                    <SearchForm
+                        data={searchDataArr}
+                        buttonGroup={[{ onSearch: this.handleFormSearch }]}
+                    />
+                ) : (
+                    ''
+                )}
                 <div style={{ textAlign: 'right', paddingBottom: '10px' }}>
                     <Button onClick={() => this.editSome()} size="small" type="default">
                         新增供应商

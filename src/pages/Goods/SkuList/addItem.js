@@ -146,8 +146,6 @@ class SkuListAdd extends PureComponent {
         const htmlContent = editorState.toHTML()
         form.validateFieldsAndScroll((err, values) => {
             if (!err) {
-                console.log(values)
-                console.log(picturesSameSpu, describeSameSpu)
                 const params = {
                     t: 'sku.save',
                     spuid: values.spuid,
@@ -172,7 +170,7 @@ class SkuListAdd extends PureComponent {
                 Object.keys(params).forEach(key => {
                     formData.append(key, params[key])
                 })
-                console.log('Received values of form: ', values, htmlContent)
+                // console.log('Received values of form: ', values, htmlContent)
                 goodsPost('', formData).then(res => {
                     if (res && res.errcode === 0) {
                         message.success('操作成功!', 1, () => {
@@ -246,7 +244,6 @@ class SkuListAdd extends PureComponent {
     }
 
     myUploadFn = param => {
-        console.log(param)
         const formData = new FormData()
         formData.append('files[]', param.file)
         generalPost(
@@ -331,7 +328,6 @@ class SkuListAdd extends PureComponent {
         }
 
         function createSpuImage() {
-            console.log(11, spuPictures)
             const arr = spuPictures.map((item, i) => {
                 return (
                     <img style={{ width: '150px', margin: '20px' }} src={item.url} alt="" key={i} />
@@ -340,8 +336,6 @@ class SkuListAdd extends PureComponent {
             return arr
         }
 
-        console.log('picturesSameSpu:', picturesSameSpu)
-
         return (
             <Fragment>
                 <Form {...formItemLayout} onSubmit={this.handleSubmit}>
@@ -349,7 +343,7 @@ class SkuListAdd extends PureComponent {
                         关联SPU
                     </div>
                     <Row>
-                        <Col span={8}>
+                        <Col span={24}>
                             <Form.Item label="spu">
                                 {getFieldDecorator('spuid', {
                                     rules: [
