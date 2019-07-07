@@ -39,6 +39,7 @@ class LoginPage extends Component {
                 t: 'login',
                 mobile,
                 password: md5(password),
+                type: 1,
             }).then(res => {
                 if (res && res.errcode === 0) {
                     const { data: userInfo } = res

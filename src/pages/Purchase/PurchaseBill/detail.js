@@ -87,7 +87,7 @@ class PurchaseBillDetail extends Component {
             <PageHeaderWrapper>
                 <BasicTable
                     columns={purchaseDetailColumns}
-                    scroll={{ x: 1800 }}
+                    scroll={{ x: 2200 }}
                     dataSource={dataSrouce}
                     pagination={{
                         ...pagination,

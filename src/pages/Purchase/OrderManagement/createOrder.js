@@ -353,6 +353,7 @@ class PurchaseCreateOrder extends Component {
                                 })(
                                     <Input
                                         readOnly
+                                        disabled
                                         type="number"
                                         placeholder="该字段为动态生成，无需填写"
                                     />
@@ -385,6 +386,7 @@ class PurchaseCreateOrder extends Component {
                                 })(
                                     <Input
                                         readOnly
+                                        disabled
                                         type="number"
                                         placeholder="该字段为动态生成，无需填写"
                                     />
@@ -414,7 +416,11 @@ class PurchaseCreateOrder extends Component {
                         <Col span={8}>
                             <Form.Item label="供应商地址">
                                 {getFieldDecorator('providerAdress')(
-                                    <Input readOnly placeholder="该字段为动态生成，无需填写" />
+                                    <Input
+                                        readOnly
+                                        disabled
+                                        placeholder="该字段为动态生成，无需填写"
+                                    />
                                 )}
                             </Form.Item>
                         </Col>

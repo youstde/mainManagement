@@ -5,9 +5,9 @@ import { uuid, createSign, mainSite } from '@/utils/utils'
 import md5 from 'md5'
 
 // const baseUrl = '/api'
-const baseUrl = '//admin.api.fresh.laoniutech.com'
+// const baseUrl = '//admin.api.fresh.laoniutech.com'
 // const baseUrl = '//47.103.103.162:82'
-// const baseUrl = '//msapi.yicaipi.com'
+const baseUrl = '//msapi.yicaipi.com'
 
 const loading = {
     show() {

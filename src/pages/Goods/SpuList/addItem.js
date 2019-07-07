@@ -194,9 +194,9 @@ class SpuListEdit extends PureComponent {
             if (!err) {
                 const params = {
                     t: 'spu.save',
-                    spuid: activeId,
                     describe: htmlContent,
                 }
+                if (activeId) params.spuid = activeId
                 Object.keys(values).forEach(key => {
                     if (key === 'region_arr') {
                         // eslint-disable-next-line prefer-destructuring

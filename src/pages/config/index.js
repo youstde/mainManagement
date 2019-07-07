@@ -65,6 +65,10 @@ export const purchaseDetailColumns = [
         title: '净重',
     },
     {
+        dataIndex: 'quantity',
+        title: '订货数量',
+    },
+    {
         dataIndex: 'quantity_real',
         title: '实际采购数量',
     },
