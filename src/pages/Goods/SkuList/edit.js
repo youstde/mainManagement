@@ -404,10 +404,10 @@ class SkuListEdit extends PureComponent {
                         关联SPU
                     </div>
                     <Row>
-                        <Col span={8}>
+                        <Col span={24}>
                             <Form.Item label="spu">
                                 {getFieldDecorator('spuid', {
-                                    initialValue: dataSource.spuid,
+                                    initialValue: dataSource.spuid ? `${dataSource.spuid}` : '',
                                     rules: [
                                         {
                                             required: true,
