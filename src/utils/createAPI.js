@@ -4,8 +4,13 @@ import { Modal } from 'antd'
 import { uuid, createSign, mainSite } from '@/utils/utils'
 import md5 from 'md5'
 
-// const baseUrl = '/api'
-const baseUrl = '//admin.api.fresh.laoniutech.com'
+let baseUrl = ''
+const { host } = window.location
+if (host === 'admin.fresh.laoniutech.com' || host === 'project.znckj.com') {
+    baseUrl = '//admin.api.fresh.laoniutech.com'
+} else {
+    baseUrl = '//msapi.yicaipi.com'
+}
 // const baseUrl = '//47.103.103.162:82'
 // const baseUrl = '//msapi.yicaipi.com'
 

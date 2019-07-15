@@ -1,21 +1,20 @@
 import React, { Component } from 'react'
 import { connect } from 'dva'
+import { Modal } from 'antd'
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper'
 import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
+import Button from '@/components/Button'
+import Detail from './detail'
 
-import { generalGet } from '@/services/common'
-
-// mock
-// import OrderMock from '../mock/order'
-
-// import { fetchFunction } from '@/services'
-const fetchFunction = async () => ({ data: { list: [], count: 0 }, success: true })
+import { generalGet, orderBaseGet } from '@/services/common'
 
 @connect(() => ({}))
 class StoremanagementOrder extends Component {
     state = {
+        visibleModal: false,
+        activeSerialNo: '',
         storeData: [],
         searchCondition: {}, // 搜索条件
         dataSrouce: [], // 表格数据
@@ -27,27 +26,33 @@ class StoremanagementOrder extends Component {
     }
 
     componentDidMount() {
-        // this.fetchData()
+        this.fetchData()
         this.fetchStoreData()
     }
 
     // 请求表格的数据
-    fetchData = (parmas = {}) => {
-        const { pageNum, ...params } = parmas
+    fetchData = () => {
         const { pagination, searchCondition } = this.state
-
-        fetchFunction({
-            pageSize: pagination.pageSize,
-            pageNum: pageNum || pagination.current,
-            ...searchCondition,
-            ...params,
-        }).then(res => {
-            if (res && res.success) {
+        console.log('searchCondition:', searchCondition)
+        const params = {
+            t: 'order.list',
+            size: pagination.pageSize,
+            index: pagination.current,
+        }
+        if (searchCondition.order_time) params.order_time = searchCondition.order_time
+        if (searchCondition.mch_id) params.mch_id = searchCondition.mch_id
+        if (searchCondition.mobile) params.mobile = searchCondition.mobile
+        if (searchCondition.serial_no) params.serial_no = searchCondition.serial_no
+        if (searchCondition.status !== undefined && searchCondition.status !== '')
+            params.status = searchCondition.status
+        console.log('params:', params)
+        orderBaseGet(params).then(res => {
+            if (res && res.errcode === 0) {
                 this.setState({
-                    dataSrouce: res.data.list,
+                    dataSrouce: res.data,
                     pagination: {
                         ...pagination,
-                        total: res.data.count,
+                        total: res.pages.count,
                     },
                 })
             }
@@ -69,7 +74,6 @@ class StoremanagementOrder extends Component {
     // 查询表单搜索
     handleFormSearch = values => {
         const { pagination } = this.state
-
         this.setState(
             {
                 searchCondition: values,
@@ -106,8 +110,22 @@ class StoremanagementOrder extends Component {
         )
     }
 
+    handleShowDetail = id => {
+        this.setState({
+            activeSerialNo: id,
+            visibleModal: true,
+        })
+    }
+
+    handleModalCancel = () => {
+        this.setState({
+            visibleModal: false,
+            activeSerialNo: '',
+        })
+    }
+
     render() {
-        const { dataSrouce, pagination, storeData } = this.state
+        const { dataSrouce, pagination, storeData, activeSerialNo, visibleModal } = this.state
         console.log(dataSrouce)
 
         function createStoreOptions() {
@@ -127,27 +145,26 @@ class StoremanagementOrder extends Component {
                         {
                             label: '订单ID',
                             type: 'input',
-                            key: 'orderId',
+                            key: 'serial_no',
                         },
                         {
                             label: '手机号',
                             type: 'input',
-                            options: [{ key: 1, value: '选择1' }, { key: 2, value: '选择2' }],
-                            key: 'phone',
+                            key: 'mobile',
                         },
                         {
                             label: '订单时间',
                             type: 'datepicker',
-                            key: 'orderDate',
+                            key: 'order_time',
                         },
                         {
                             label: '订单状态',
                             type: 'select',
-                            key: 'orderState',
+                            key: 'status',
                             options: [{ key: 0, value: '未处理' }, { key: 1, value: '已处理' }],
                         },
                         {
-                            key: 'storeName',
+                            key: 'mch_id',
                             label: '门店',
                             type: 'select',
                             options: createStoreOptions(),
@@ -155,19 +172,19 @@ class StoremanagementOrder extends Component {
                     ]}
                     buttonGroup={[
                         { onSearch: this.handleFormSearch },
-                        { onDownload: this.handleFromDownload },
+                        // { onDownload: this.handleFromDownload },
                     ]}
                 />
                 <BasicTable
                     columns={[
                         {
                             title: '订单时间',
-                            dataIndex: 'orderDate',
+                            dataIndex: 'create_time',
                             type: 'date',
                         },
                         {
                             title: '订单Id',
-                            dataIndex: 'orderId',
+                            dataIndex: 'serial_no',
                         },
                         {
                             title: '所属门店',
@@ -175,118 +192,72 @@ class StoremanagementOrder extends Component {
                         },
                         {
                             title: '客户Id',
-                            dataIndex: 'userId',
+                            dataIndex: 'user_id',
                         },
                         {
-                            dataIndex: 'userPhone',
+                            dataIndex: 'mobile',
                             title: '客户电话',
                         },
                         {
-                            dataIndex: 'userName',
+                            dataIndex: 'contacter',
                             title: '客户姓名',
                         },
                         {
-                            dataIndex: 'orderPrice',
+                            dataIndex: 'amount',
                             title: '订单金额',
                         },
                         {
-                            dataIndex: 'paymament',
+                            dataIndex: 'paytype',
                             title: '支付方式',
                         },
                         {
-                            dataIndex: 'orderState',
+                            dataIndex: 'status_desc',
                             title: '订单状态',
                         },
                         {
-                            dataIndex: 'goodsId',
-                            title: ' 商品批次Id',
-                            type: 'longText',
-                        },
-                        {
-                            dataIndex: 'skuName',
-                            title: 'sku品名',
-                        },
-                        {
-                            dataIndex: 'goodsClass',
-                            title: '品类',
-                        },
-                        {
-                            dataIndex: 'goodsArea',
-                            title: '产区',
-                        },
-                        {
-                            dataIndex: 'goodsType',
-                            title: '品种',
-                        },
-                        {
-                            dataIndex: 'storecase',
-                            title: '存储情况',
-                        },
-                        {
-                            dataIndex: 'processcase',
-                            title: '加工情况',
-                        },
-                        {
-                            dataIndex: 'outPackage',
-                            title: '外包装',
-                        },
-                        {
-                            dataIndex: 'innerPackage',
-                            title: '内包装',
-                        },
-                        {
-                            dataIndex: 'factSize',
-                            title: ' 实际规格值',
-                        },
-                        {
-                            dataIndex: 'clearWeight',
-                            title: '净重',
-                        },
-                        {
-                            dataIndex: 'buyDate',
-                            title: '采购日期',
-                        },
-                        {
-                            dataIndex: 'storePrice',
-                            title: '门店结算价',
-                        },
-                        {
-                            dataIndex: 'storeCurrentPriceSingle',
-                            title: '门店在售价(单)',
-                        },
-                        {
-                            dataIndex: 'buyNum',
-                            title: '售出数量',
-                        },
-                        {
-                            dataIndex: 'storeCurrentPriceAll',
-                            title: '门店在售价(总)',
-                        },
-                        {
-                            dataIndex: 'applybill',
-                            title: '发票申请',
-                        },
-                        {
-                            dataIndex: 'usermark',
+                            dataIndex: 'remark_user',
                             title: '用户备注',
                         },
                         {
-                            dataIndex: 'adminmark',
+                            dataIndex: 'remark_admin',
                             title: '管理备注',
                         },
                         {
                             type: 'oprate',
                             fixed: 'right',
-                            buttons: [{ text: '查看' }, { text: '编辑' }],
+                            render: (_, { serial_no: serialNo }) => {
+                                return (
+                                    <div>
+                                        <Button
+                                            onClick={() => this.handleShowDetail(serialNo)}
+                                            size="small"
+                                            type="default"
+                                            style={{ marginBottom: '10px' }}
+                                        >
+                                            查看详情
+                                        </Button>
+                                    </div>
+                                )
+                            },
                         },
                     ]}
-                    scroll={{ x: 2800 }}
+                    scroll={{ x: 1900 }}
                     dataSource={dataSrouce}
                     pagination={{
                         ...pagination,
                         onChange: this.handleChangePage,
                     }}
                 />
+                <Modal
+                    width="90%"
+                    title="订单详情"
+                    destroyOnClose
+                    visible={visibleModal}
+                    onCancel={this.handleModalCancel}
+                    footer={null}
+                >
+                    <Detail serialNo={activeSerialNo} />
+                </Modal>
             </PageHeaderWrapper>
         )
     }

@@ -76,6 +76,12 @@ export const goodsBaseGet = async (params = {}) =>
         params,
     })
 
+// 订单get请求的基础
+export const orderBaseGet = async (params = {}) =>
+    createAPI('/order', 'get', {
+        params,
+    })
+
 // 门店post请求的基础
 export const goodsPost = async (params = {}, formData) =>
     createAPI('/goods', 'post', {
