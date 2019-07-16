@@ -48,7 +48,7 @@ class PurchaseOrderManagement extends Component {
         if (searchCondition.date) {
             options.date = clearDate(searchCondition.date)
         }
-        if (searchCondition.status) {
+        if (searchCondition.status !== undefined && searchCondition.status !== '') {
             options.status = searchCondition.status
         }
 
@@ -191,6 +191,7 @@ class PurchaseOrderManagement extends Component {
                         {
                             label: '状态',
                             type: 'select',
+                            initValue: '0',
                             key: 'status',
                             options: [{ key: 0, value: '未处理' }, { key: 1, value: '已处理' }],
                         },

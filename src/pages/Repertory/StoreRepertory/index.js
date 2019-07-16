@@ -102,6 +102,7 @@ class RepertoryStoreRepertory extends Component {
                         {
                             label: '状态',
                             type: 'select',
+                            initValue: '0',
                             options: [
                                 { key: -1, value: '全部' },
                                 { key: 0, value: '下架' },

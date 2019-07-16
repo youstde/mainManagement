@@ -34,7 +34,8 @@ class GoodsStoreGoodsList extends Component {
             index: pagination.current,
         }
         if (searchCondition.q) params.q = searchCondition.q
-        if (searchCondition.q) params.q = searchCondition.q
+        if (searchCondition.status !== undefined && searchCondition.status !== '')
+            params.status = searchCondition.status
         goodsBaseGet(params).then(res => {
             if (res && res.errcode === 0) {
                 this.setState({
@@ -131,6 +132,7 @@ class GoodsStoreGoodsList extends Component {
                         {
                             label: '状态',
                             type: 'select',
+                            initValue: '0',
                             options: [
                                 { key: -1, value: '全部' },
                                 { key: 0, value: '已下架' },

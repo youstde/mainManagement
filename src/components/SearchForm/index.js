@@ -22,7 +22,7 @@ class SearchForm extends Component {
     }
 
     // 生成select
-    createSelect = ({ label, key, options = [], ...props }) => {
+    createSelect = ({ label, key, options = [], initValue = '', ...props }) => {
         const {
             form: { getFieldDecorator },
         } = this.props
@@ -39,7 +39,9 @@ class SearchForm extends Component {
 
         return (
             <Form.Item label={label} key={key}>
-                {getFieldDecorator(key)(
+                {getFieldDecorator(key, {
+                    initialValue: initValue,
+                })(
                     <Select style={{ width: 200 }} {...custom} {...props}>
                         {options.map(option => (
                             <Select.Option key={option.key}>{option.value}</Select.Option>

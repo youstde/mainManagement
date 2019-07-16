@@ -49,7 +49,8 @@ class PurchaseBillList extends Component {
         }
         if (searchCondition.supplier_id) params.supplier_id = searchCondition.supplier_id
         if (searchCondition.date) params.date = clearDate(searchCondition.date)
-        if (searchCondition.status !== undefined) params.status = searchCondition.status
+        if (searchCondition.status !== undefined && searchCondition.status !== '')
+            params.status = searchCondition.status
         if (searchCondition.skuid) params.skuid = searchCondition.skuid
         if (searchCondition.buyer) params.buyer = searchCondition.buyer
         createSignOptions(params)
@@ -241,6 +242,7 @@ class PurchaseBillList extends Component {
                         {
                             label: '状态',
                             type: 'select',
+                            initValue: '0',
                             key: 'status',
                             options: [{ key: 0, value: '未处理' }, { key: 1, value: '已处理' }],
                         },

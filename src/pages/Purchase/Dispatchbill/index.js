@@ -50,7 +50,8 @@ class PurchaseDispatchbillList extends Component {
         if (searchCondition.date) params.date = clearDate(searchCondition.date)
         if (searchCondition.supplier_id) params.supplier_id = searchCondition.supplier_id
         if (searchCondition.mch_id) params.mch_id = searchCondition.mch_id
-        if (searchCondition.status !== undefined) params.status = searchCondition.status
+        if (searchCondition.status !== undefined && searchCondition.status !== '')
+            params.status = searchCondition.status
         createSignOptions(params)
         const formData = new FormData()
         Object.keys(params).forEach(key => {
@@ -202,6 +203,7 @@ class PurchaseDispatchbillList extends Component {
                             label: '状态',
                             type: 'select',
                             key: 'status',
+                            initValue: '0',
                             options: [{ key: 0, value: '未处理' }, { key: 1, value: '已处理' }],
                         },
                         {

@@ -160,8 +160,14 @@ class StoremanagementOrder extends Component {
                         {
                             label: '订单状态',
                             type: 'select',
+                            initValue: '0',
                             key: 'status',
-                            options: [{ key: 0, value: '未处理' }, { key: 1, value: '已处理' }],
+                            options: [
+                                { key: -1, value: '全部' },
+                                { key: 0, value: '待支付' },
+                                { key: 1, value: '已支付' },
+                                { key: 11, value: '已取消' },
+                            ],
                         },
                         {
                             key: 'mch_id',

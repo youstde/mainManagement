@@ -232,7 +232,7 @@ class LogisticsDispatchmanagement extends Component {
                     ]}
                     buttonGroup={[
                         { onSearch: this.handleFormSearch },
-                        { onDownload: this.handleFromDownload },
+                        // { onDownload: this.handleFromDownload },
                     ]}
                 />
                 <div style={{ textAlign: 'right', paddingBottom: '10px' }}>
