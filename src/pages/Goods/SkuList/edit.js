@@ -479,7 +479,7 @@ class SkuListEdit extends PureComponent {
                             </Form.Item>
                         </Col>
                         <Col span={8}>
-                            <Form.Item label="规格">
+                            <Form.Item label="单位">
                                 {getFieldDecorator('specification_id', {
                                     initialValue: dataSource.specification_id,
                                 })(

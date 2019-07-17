@@ -191,7 +191,7 @@ class GoodsSkuList extends Component {
                         },
                         {
                             dataIndex: 'specification_name',
-                            title: '规格',
+                            title: '单位',
                         },
                         {
                             dataIndex: 'specification_value',

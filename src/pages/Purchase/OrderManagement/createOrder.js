@@ -138,7 +138,7 @@ class PurchaseCreateOrder extends Component {
                     buy_date: clearDate(values.buyDate),
                     quantity_total: values.quantity_total,
                     supplier_id: values.provider,
-                    supplier_address: values.providerAdress,
+                    // supplier_address: values.providerAdress,
                 }
                 if (fileList.length) params.pictures = this.clearImgs(fileList)
                 createSignOptions(params)
@@ -195,9 +195,9 @@ class PurchaseCreateOrder extends Component {
                 adress = item.address
             }
         })
-        form.setFieldsValue({
-            providerAdress: adress,
-        })
+        // form.setFieldsValue({
+        //     providerAdress: adress,
+        // })
     }
 
     render() {
@@ -254,7 +254,7 @@ class PurchaseCreateOrder extends Component {
                 dataIndex: 'brand_name',
             },
             {
-                title: '规格',
+                title: '单位',
                 dataIndex: 'specification_name',
             },
             {
@@ -413,7 +413,7 @@ class PurchaseCreateOrder extends Component {
                                 )}
                             </Form.Item>
                         </Col>
-                        <Col span={8}>
+                        {/* <Col span={8}>
                             <Form.Item label="供应商地址">
                                 {getFieldDecorator('providerAdress')(
                                     <Input
@@ -423,7 +423,7 @@ class PurchaseCreateOrder extends Component {
                                     />
                                 )}
                             </Form.Item>
-                        </Col>
+                        </Col> */}
                     </Row>
                 </Form>
                 <Row gutter={24}>

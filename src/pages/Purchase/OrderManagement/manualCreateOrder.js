@@ -126,7 +126,7 @@ class PurchaseManualCreateOrder extends Component {
                     buy_date: clearDate(values.buyDate),
                     quantity_total: values.quantity_total,
                     supplier_id: values.provider,
-                    supplier_address: values.providerAdress,
+                    // supplier_address: values.providerAdress,
                 }
                 if (fileList.length) params.pictures = this.clearImgs(fileList)
                 createSignOptions(params)
@@ -211,9 +211,9 @@ class PurchaseManualCreateOrder extends Component {
                 adress = item.address
             }
         })
-        form.setFieldsValue({
-            providerAdress: adress,
-        })
+        // form.setFieldsValue({
+        //     providerAdress: adress,
+        // })
     }
 
     render() {
@@ -277,7 +277,7 @@ class PurchaseManualCreateOrder extends Component {
                 dataIndex: 'brand_name',
             },
             {
-                title: '规格',
+                title: '单位',
                 dataIndex: 'specification_name',
             },
             {
@@ -434,13 +434,13 @@ class PurchaseManualCreateOrder extends Component {
                                 )}
                             </Form.Item>
                         </Col>
-                        <Col span={8}>
+                        {/* <Col span={8}>
                             <Form.Item label="供应商地址">
                                 {getFieldDecorator('providerAdress')(
                                     <Input readOnly placeholder="此项为动态生成，无需填写" />
                                 )}
                             </Form.Item>
-                        </Col>
+                        </Col> */}
                     </Row>
                 </Form>
                 <Row gutter={24}>
