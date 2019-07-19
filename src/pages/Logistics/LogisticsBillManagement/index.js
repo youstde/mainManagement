@@ -1,17 +1,20 @@
 import React, { Component } from 'react'
 import { connect } from 'dva'
+import { Modal, Input, Form, message } from 'antd'
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper'
 // import SearchForm from '@/components/SearchForm'
 import BasicTable from '@/components/BasicTable'
 import Button from '@/components/Button'
 
-import { logisticsPost } from '@/services/common'
+import { logisticsPost, logisticsGet } from '@/services/common'
 import { createSignOptions } from '@/utils/utils'
 
 @connect(() => ({}))
 class LogisticsBillManagement extends Component {
     state = {
+        editAdressItem: {},
+        showEditAdress: false,
         // searchCondition: {}, // 搜索条件
         dataSrouce: [], // 表格数据
         pagination: {
@@ -97,8 +100,72 @@ class LogisticsBillManagement extends Component {
         history.push(`/logistics/logisticsbillmanagement/detail?serialNo=${serialNo}`)
     }
 
+    handleEditAdress = item => {
+        this.setState({
+            showEditAdress: true,
+            editAdressItem: item,
+        })
+    }
+
+    handleHideEdit = () => {
+        this.setState({
+            showEditAdress: false,
+            editAdressItem: {},
+        })
+    }
+
+    handleEditAdressSubmit = e => {
+        e.preventDefault()
+        const { editAdressItem } = this.state
+        console.log('activeItem:', editAdressItem)
+        const { form } = this.props
+        form.validateFieldsAndScroll((err, values) => {
+            if (!err) {
+                console.log('Received values of form: ', values)
+                logisticsGet({
+                    t: 'update.supplier.address',
+                    id: editAdressItem.id,
+                    adr: values.adr,
+                }).then(res => {
+                    if (res && res.errcode === 0) {
+                        message.success('操作成功!')
+                        this.handleHideEdit()
+                        this.fetchData()
+                    }
+                })
+            }
+        })
+    }
+
     render() {
-        const { dataSrouce, pagination } = this.state
+        const { dataSrouce, pagination, showEditAdress, editAdressItem } = this.state
+        const {
+            form: { getFieldDecorator },
+        } = this.props
+
+        const formItemLayout = {
+            labelCol: {
+                xs: { span: 24 },
+                sm: { span: 8 },
+            },
+            wrapperCol: {
+                xs: { span: 24 },
+                sm: { span: 16 },
+            },
+        }
+
+        const tailFormItemLayout = {
+            wrapperCol: {
+                xs: {
+                    span: 24,
+                    offset: 0,
+                },
+                sm: {
+                    span: 16,
+                    offset: 10,
+                },
+            },
+        }
 
         return (
             <PageHeaderWrapper>
@@ -168,6 +235,20 @@ class LogisticsBillManagement extends Component {
                         {
                             dataIndex: 'supplier_address',
                             title: '发货地',
+                            render: (_, labelActiveItem) => {
+                                return (
+                                    <div>
+                                        <span>{labelActiveItem.supplier_address}</span>
+                                        <Button
+                                            onClick={() => this.handleEditAdress(labelActiveItem)}
+                                            size="small"
+                                            type="default"
+                                        >
+                                            编辑
+                                        </Button>
+                                    </div>
+                                )
+                            },
                         },
                         {
                             dataIndex: 'mch_address',
@@ -202,9 +283,31 @@ class LogisticsBillManagement extends Component {
                         onChange: this.handleChangePage,
                     }}
                 />
+                <Modal
+                    title="编辑发货地址"
+                    footer={null}
+                    width={680}
+                    destroyOnClose
+                    visible={showEditAdress}
+                    onCancel={this.handleHideEdit}
+                >
+                    <Form {...formItemLayout} onSubmit={this.handleEditAdressSubmit}>
+                        <Form.Item label="收货地址">
+                            {getFieldDecorator('adr', {
+                                initialValue: editAdressItem.supplier_address,
+                                rules: [{ required: true, message: '收货地址不能为空!' }],
+                            })(<Input placeholder="请输入收货地址" />)}
+                        </Form.Item>
+                        <Form.Item {...tailFormItemLayout}>
+                            <Button type="primary" htmlType="submit">
+                                确定
+                            </Button>
+                        </Form.Item>
+                    </Form>
+                </Modal>
             </PageHeaderWrapper>
         )
     }
 }
 
-export default LogisticsBillManagement
+export default Form.create({ name: 'Logistics_bill_management' })(LogisticsBillManagement)

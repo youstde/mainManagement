@@ -334,7 +334,7 @@ export default [
             {
                 path: '/statistics',
                 name: '统计',
-                icon: 'container',
+                icon: 'file-search',
                 routes: [
                     {
                         path: '/statistics/goodsstatistics',
