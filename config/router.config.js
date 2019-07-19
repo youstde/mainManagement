@@ -332,6 +332,28 @@ export default [
                 ],
             },
             {
+                path: '/statistics',
+                name: '统计',
+                icon: 'container',
+                routes: [
+                    {
+                        path: '/statistics/goodsstatistics',
+                        name: '商品统计',
+                        component: './Statistics/GoodsStatistics',
+                    },
+                    {
+                        path: '/statistics/companyrevenue',
+                        name: '公司营收总表',
+                        component: './Statistics/CompanyRevenue',
+                    },
+                    {
+                        path: '/statistics/merchantstatistics',
+                        name: '门店统计',
+                        component: './Statistics/MerchantStatistics',
+                    },
+                ],
+            },
+            {
                 path: '/authority',
                 name: '权限',
                 icon: 'thunderbolt',

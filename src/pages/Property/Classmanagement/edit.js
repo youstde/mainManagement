@@ -184,6 +184,7 @@ class EditItem extends Component {
                         arr.push(
                             <Form.Item label={field.show_name}>
                                 {getFieldDecorator(field.field_name, {
+                                    initialValue: item[field.field_name],
                                     rules: [
                                         {
                                             required: true,

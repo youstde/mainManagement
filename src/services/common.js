@@ -6,6 +6,12 @@ export const baseGet = async (params = {}) =>
         params,
     })
 
+// statistics get请求的基础
+export const baseStatisticsGet = async (params = {}) =>
+    createAPI('/statistics', 'get', {
+        params,
+    })
+
 // 门店get请求的基础
 export const storeBaseGet = async (params = {}) =>
     createAPI('/merchant', 'get', {
