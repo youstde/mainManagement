@@ -128,7 +128,7 @@ class PropertyClassManagement extends Component {
         function createColumns() {
             const newArr = []
             fields.forEach(item => {
-                if (!item.hidden) {
+                if (item.hidden === 0 || item.hidden === 2) {
                     if (item.field_type === 'file') {
                         newArr.push({
                             title: item.show_name,

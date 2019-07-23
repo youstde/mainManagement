@@ -3,6 +3,7 @@ import { connect } from 'dva'
 import { Form, Input, Button, message, DatePicker, Select, Upload, Icon, Modal } from 'antd'
 import moment from 'moment'
 import UploadImg from '../components/uploadImg'
+import styles from './index.less'
 
 import { configurationGet } from '@/services/common'
 
@@ -203,7 +204,13 @@ class EditItem extends Component {
                         break
                     default:
                         arr.push(
-                            <Form.Item label={field.show_name}>
+                            <Form.Item
+                                label={field.show_name}
+                                style={{
+                                    display:
+                                        field.hidden === 1 || field.hidden === 2 ? 'none' : 'block',
+                                }}
+                            >
                                 {getFieldDecorator(field.field_name, {
                                     initialValue: item[field.field_name] || field.default_value,
                                     rules: [

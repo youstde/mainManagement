@@ -7,6 +7,7 @@ export const baseConfig = {
     mch_levels: {
         1: '一级',
         2: '二级',
+        11: 'KA门店',
         // '3': '三级',
     },
     status: {

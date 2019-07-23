@@ -1,6 +1,6 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'dva'
-import { Form, Input, Button, message, Select } from 'antd'
+import { Form, Input, Button, message, Select, DatePicker } from 'antd'
 
 import { storeBaseGet } from '@/services/common'
 import { baseConfig } from '@/utils/baseConfig'
@@ -44,6 +44,7 @@ class AddStore extends PureComponent {
                     level: values.level,
                     contacter: values.contacter,
                     address: values.address,
+                    open_time: values.open_time,
                 }
                 if (storeItemData.name) params.id = storeItemData.id
                 storeBaseGet(params).then(res => {
@@ -148,6 +149,17 @@ class AddStore extends PureComponent {
                                 },
                             ],
                         })(<Select>{createOptions()}</Select>)}
+                    </Form.Item>
+                    <Form.Item label="营业时间">
+                        {getFieldDecorator('open_time', {
+                            initialValue: storeItemData.open_time || '',
+                            rules: [
+                                {
+                                    required: true,
+                                    message: '营业时间不能为空!',
+                                },
+                            ],
+                        })(<Input placeholder="请输入营业时间" />)}
                     </Form.Item>
                     <Form.Item {...formItemLayoutWithOutLabel}>
                         <Button type="primary" htmlType="submit">
