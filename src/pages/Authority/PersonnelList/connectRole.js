@@ -40,6 +40,10 @@ class ConnectRole extends PureComponent {
     handlesubmit = () => {
         const { numberId, cancelModal } = this.props
         const { ischeckedValues } = this.state
+        if (!ischeckedValues.length) {
+            message.warn('请选择角色!', 2)
+            return
+        }
         baseGet({
             t: 'member.auth',
             id: numberId,
