@@ -184,7 +184,7 @@ class StatisticsGoodsStatistics extends Component {
                             title: '物流损耗额',
                         },
                         {
-                            dataIndex: 'rate_loss',
+                            dataIndex: 'rate_logistics_loss',
                             title: '损耗率',
                         },
                         {

@@ -111,10 +111,10 @@ class StatisticsCompanyRevenue extends Component {
                             dataIndex: 'amount_logistics',
                             title: '对应物流成本',
                         },
-                        {
-                            dataIndex: 'amount_loss_total',
-                            title: '总仓损耗额',
-                        },
+                        // {
+                        //     dataIndex: 'amount_loss_total',
+                        //     title: '总仓损耗额',
+                        // },
                         {
                             dataIndex: 'amount_loss_mch',
                             title: '门店损耗额',
